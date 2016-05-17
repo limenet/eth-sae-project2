@@ -10,7 +10,3 @@ export LD_LIBRARY_PATH=$base/
 mkdir -p bin
 $JAVA_HOME/bin/javac -d bin src/*.java
 $JAVA_HOME/bin/javac -d bin src/ch/ethz/sae/*.java
-
-
-
-
