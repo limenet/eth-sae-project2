@@ -48,6 +48,24 @@ import soot.toolkits.scalar.ForwardBranchedFlowAnalysis;
 import soot.util.Chain;
 
 public class Analysis extends ForwardBranchedFlowAnalysis<AWrapper> {
+
+	public static Manager man;
+	
+	private Environment env;
+	
+	public UnitGraph g;
+	
+	public String local_ints[]; // integer local variables of the method
+	
+	public static String reals[] = { "x" };
+	
+	public SootClass jclass;
+	
+	private String class_ints[]; // integer class variables where the method is
+	
+	public static String resourceArrayName = "PrinterArray";
+	
+	public static String functionName = "sendJob";
 	
 	private static final int WIDENING_THRESHOLD = 6;
 	
@@ -410,15 +428,4 @@ public class Analysis extends ForwardBranchedFlowAnalysis<AWrapper> {
 		}
 		return top;
 	}
-
-	public static Manager man;
-	private Environment env;
-	public UnitGraph g;
-	public String local_ints[]; // integer local variables of the method
-	public static String reals[] = { "x" };
-	public SootClass jclass;
-	private String class_ints[]; // integer class variables where the method is
-	
-	public static String resourceArrayName = "PrinterArray";
-	public static String functionName = "sendJob";
 }
