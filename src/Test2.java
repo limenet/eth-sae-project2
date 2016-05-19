@@ -1,7 +1,6 @@
-/**
- * And example application you may want to analyze to test your analysis.
- *
- */
+// DIV_OUTPUT = MAY_DIV_ZERO
+// BOUNDS_OUTPUT = NO_OUT_OF_BOUNDS
+
 public class Test2 {
     public static void bar(int n) {
         int a = 5/n;
