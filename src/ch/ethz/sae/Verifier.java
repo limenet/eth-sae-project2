@@ -64,9 +64,10 @@ public class Verifier {
 		for (Unit u : method.retrieveActiveBody().getUnits()) {
 			AWrapper state = fixPoint.getFlowBefore(u);
 			try {
-		    		if (state.get().isBottom(Analysis.man))
+				if (state.get().isBottom(Analysis.man)) {
 	    			// unreachable code
 					continue;
+				}
 			} catch (ApronException e) {
 				e.printStackTrace();
 			} 
@@ -122,6 +123,7 @@ public class Verifier {
 			}
 		}
 
+		//Return false if the method may have index out of bound errors
 		return false;
 	}
 
