@@ -6,7 +6,7 @@
  *
  */
 public class Test1 {
-    public static void foo() {
+	public static void foo() {
         PrinterArray pa = new PrinterArray(5);
         pa.sendJob(2);
     }
