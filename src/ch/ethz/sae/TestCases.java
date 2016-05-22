@@ -1,5 +1,18 @@
 package ch.ethz.sae;
 
+import static org.junit.Assert.assertEquals;
+
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
+
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
+import org.junit.runners.Parameterized.Parameter;
+import org.junit.runners.Parameterized.Parameters;
+
 import static org.junit.Assert.*;
 
 import java.io.BufferedReader;
@@ -13,20 +26,26 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+@RunWith(Parameterized.class)
 public class TestCases {
+	
+	@Parameter(0)
+	public String inputClass;
+	
+	@Parameter(1)
+	public String expected;
 
 	@Before
-	public void setUp() throws Exception {
+	public void setUp() throws Exception {		
 	}
 
-	@After
-	public void tearDown() throws Exception {
-	}
-
-	@Test
-	public void test() throws IOException, InterruptedException {
-
-		String[] testClasses = execCmd("find " + cwd() + "/src -maxdepth 1 -name Test*.java").split("\\n");
+	@Parameters(name= "{0}")
+	public static Iterable<String[]> gatherClasses() throws IOException {
+		List<String[]> output = new ArrayList<String[]>();
+		
+		String[] testClasses = execCmd("find " + cwd() + "/src -maxdepth 1 -name Test*.java ").split("\\n");
+		Arrays.sort(testClasses);
+		
 		for (String testClass : testClasses) {
 			if (testClass != "") {
 				List<String> contents = readFile(testClass);
@@ -46,28 +65,44 @@ public class TestCases {
 				String[] pathParts = testClass.split("/");
 				String className = pathParts[pathParts.length - 1];
 				className = className.substring(0, className.length() - 5);
-				String[] actualOutputOfTest = execCmd(cwd() + "/run.sh " + className).split("\\n");
-				for (int i = actualOutputOfTest.length -2 ; i <= actualOutputOfTest.length -1; i++) {
-					String output = actualOutputOfTest[i].substring(className.length() + 1);
-					if (output.contains("DIV_ZERO")) {
-						assertEquals(divOutputExpected, output);
-					} else if (output.contains("OUT_OF_BOUNDS")) {
-						assertEquals(boundsOutputExpected, output);
-					}
-					
-				}
+				
+				System.out.println(className);
+				
+				output.add(new String[] {className + "-divByZero", divOutputExpected});
+				output.add(new String[] {className + "-outOfBounds", boundsOutputExpected});
 			}
 		}
-		System.out.println("Test finished");
+		
+		 return output;
+	}
+
+	@After
+	public void tearDown() throws Exception {
 	}
 	
-	private String cwd(){
-	  String relPath = getClass().getProtectionDomain().getCodeSource().getLocation().toString();
-	  
-	  return relPath.substring(5, relPath.length() - 5);
+	@Test
+	public void test() throws IOException, InterruptedException {
+		String className = inputClass.split("-")[0];
+		String testType = inputClass.split("-")[1];
+				
+		String[] actualOutputOfTest = execCmd(cwd() + "/run.sh " + className).split("\\n");
+		for (int i = actualOutputOfTest.length -2 ; i <= actualOutputOfTest.length -1; i++) {
+			String output = actualOutputOfTest[i].substring(className.length() + 1);
+			if (output.contains("DIV_ZERO") && testType.equals("divByZero")) {
+				assertEquals(expected, output);
+			} else if (output.contains("OUT_OF_BOUNDS") && testType.equals("outOfBounds")) {
+				assertEquals(expected, output);
+			}
+			
+		}
+	}
+
+	// HELPERS
+	private static String cwd(){	  
+	  return "/home/sae/project";
 	}
 	
-	private List<String> readFile(String filename)
+	private static List<String> readFile(String filename)
 	{
 	  List<String> records = new ArrayList<String>();
 	  try
@@ -88,7 +123,7 @@ public class TestCases {
 	    return null;
 	  }
 	}
-	private String execCmd(String cmd) throws java.io.IOException {
+	private static String execCmd(String cmd) throws java.io.IOException {
         java.util.Scanner s = new java.util.Scanner(Runtime.getRuntime().exec(cmd).getInputStream()).useDelimiter("\\A");
      
         return s.hasNext() ? s.next() : "";
