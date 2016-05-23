@@ -6,6 +6,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 import apron.ApronException;
 import apron.Coeff;
@@ -15,12 +16,14 @@ import soot.Unit;
 import soot.jimple.DefinitionStmt;
 import soot.jimple.IntConstant;
 import soot.jimple.internal.ImmediateBox;
+import soot.jimple.internal.JAssignStmt;
 import soot.jimple.internal.JDivExpr;
 import soot.jimple.internal.JIfStmt;
 import soot.jimple.internal.JInvokeStmt;
 import soot.jimple.internal.JSpecialInvokeExpr;
 import soot.jimple.internal.JVirtualInvokeExpr;
 import soot.jimple.internal.JimpleLocal;
+import soot.jimple.internal.JimpleLocalBox;
 import soot.jimple.spark.sets.DoublePointsToSet;
 import soot.jimple.spark.sets.P2SetVisitor;
 import soot.jimple.spark.SparkTransformer;
@@ -138,6 +141,9 @@ public class Verifier {
 
 		// TODO: Create a list of all allocation sites for PrinterArray
 
+		Map<String, Integer> declaredPAs = new HashMap<String, Integer>();
+		Map<String, Integer> initializedPAs = new HashMap<String, Integer>();
+
 		for (Unit u : method.retrieveActiveBody().getUnits()) {
 			AWrapper state = fixPoint.getFlowBefore(u);
 
@@ -150,10 +156,38 @@ public class Verifier {
 				e.printStackTrace();
 			}
 
+			if (u instanceof JAssignStmt) {
+				JAssignStmt assignStmt = (JAssignStmt) u;
+
+				String varNameLeft = assignStmt.getLeftOp().toString();
+				String varNameRight = assignStmt.getRightOp().toString();
+
+				if (declaredPAs.containsKey(varNameRight)) {
+					System.out.println("renaming " + varNameRight + " to "
+							+ varNameLeft);
+					initializedPAs.put(varNameLeft,
+							declaredPAs.get(varNameRight));
+				}
+			}
+
 			if (u instanceof JInvokeStmt
 					&& ((JInvokeStmt) u).getInvokeExpr() instanceof JSpecialInvokeExpr) {
+
 				// TODO: Get the size of the PrinterArray given as argument to
 				// the constructor
+				// @limenet 2016-05-23 17:37 this is working
+				// see the variable argInt
+				JInvokeStmt invokeStmt = (JInvokeStmt) u;
+				Value argValue = invokeStmt.getInvokeExpr().getArg(0);
+				int argInt = ((IntConstant) argValue).value;
+
+				// System.out.println(state.getStatement());
+				System.out.println("init with " + argInt);
+				String localName = ((JimpleLocalBox) invokeStmt.getInvokeExpr()
+						.getUseBoxes().get(0)).getValue().toString();
+
+				declaredPAs.put(localName, argInt);
+
 
 			}
 
@@ -175,16 +209,47 @@ public class Verifier {
 					// TODO: Check whether the 'sendJob' method's argument is
 					// within bounds
 
+					Value argValue = jInvStmt.getInvokeExpr().getArg(0);
+					int argInt = ((IntConstant) argValue).value;
+
+					String localName = ((JimpleLocalBox) jInvStmt
+							.getInvokeExpr().getUseBoxes().get(0)).getValue()
+							.toString();
+					System.out.println(localName + ": parameter: " + argInt
+							+ ", constructed with "
+							+ initializedPAs.get(localName));
+
+					// @limenet 2016-05-23 17:38
+					// The following three if-statements are a very basic
+					// form of bounds-checking. No pointer analysis etc. is
+					// implemented here.
+
+					if (!initializedPAs.containsKey(localName)) {
+						System.out.println("Unknown PrinterArray");
+						return false;
+					}
+
+					if (initializedPAs.get(localName) == null) {
+						System.out
+								.println("Invalid PrinterArray object (n=null)");
+						return false;
+					}
+
+					if (argInt >= initializedPAs.get(localName)) {
+						return false;
+					}
 					// Visit all allocation sites that the base pointer may
 					// reference
 					MyP2SetVisitor visitor = new MyP2SetVisitor();
 					pts.forall(visitor);
 				}
+
 			}
+
 		}
 
 		// Return false if the method may have index out of bound errors
-		return false;
+		return true;
 	}
 
 	private static SootClass loadClass(String name) {
