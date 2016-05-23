@@ -65,9 +65,7 @@ public class TestCases {
 				String[] pathParts = testClass.split("/");
 				String className = pathParts[pathParts.length - 1];
 				className = className.substring(0, className.length() - 5);
-				
-				System.out.println(className);
-				
+								
 				output.add(new String[] {className + "-divByZero", divOutputExpected});
 				output.add(new String[] {className + "-outOfBounds", boundsOutputExpected});
 			}
