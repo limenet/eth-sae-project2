@@ -4,16 +4,23 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 
 import apron.ApronException;
+import apron.Coeff;
+import apron.Interval;
+import apron.Scalar;
 import soot.Unit;
 import soot.jimple.DefinitionStmt;
+import soot.jimple.IntConstant;
+import soot.jimple.internal.ImmediateBox;
 import soot.jimple.internal.JDivExpr;
 import soot.jimple.internal.JIfStmt;
 import soot.jimple.internal.JInvokeStmt;
 import soot.jimple.internal.JSpecialInvokeExpr;
 import soot.jimple.internal.JVirtualInvokeExpr;
+import soot.jimple.internal.JimpleLocal;
 import soot.jimple.spark.sets.DoublePointsToSet;
 import soot.jimple.spark.sets.P2SetVisitor;
 import soot.jimple.spark.SparkTransformer;
@@ -23,12 +30,13 @@ import soot.Local;
 import soot.Scene;
 import soot.SootClass;
 import soot.SootMethod;
+import soot.Value;
 import soot.ValueBox;
 import soot.toolkits.graph.BriefUnitGraph;
 
 public class Verifier {
 
-	public static void main(String[] args) {
+	public static void main(String[] args) throws ApronException {
 		if (args.length != 1) {
 			System.err
 					.println("Usage: java -classpath soot-2.5.0.jar:./bin ch.ethz.sae.Verifier <class to test>");
@@ -36,6 +44,8 @@ public class Verifier {
 		}
 		String analyzedClass = args[0];
 		SootClass c = loadClass(analyzedClass);
+
+		System.out.println(analyzedClass + "\n\n");
 
 		PAG pointsToAnalysis = doPointsToAnalysis(c);
 
@@ -70,7 +80,7 @@ public class Verifier {
 	}
 
 	private static boolean verifyDivisionByZero(SootMethod method,
-			Analysis fixPoint) {
+			Analysis fixPoint) throws ApronException {
 		for (Unit u : method.retrieveActiveBody().getUnits()) {
 			AWrapper state = fixPoint.getFlowBefore(u);
 
@@ -84,19 +94,43 @@ public class Verifier {
 			}
 
 			// TODO: Check that all divisors are not zero
-			
+			// @limenet 2016-05-23 15:11 this is implemented EXCEPT FOR
+			// loop widening (which is performed in Analysis.java)
+
 			if (u instanceof DefinitionStmt) {
 				DefinitionStmt defStmt = (DefinitionStmt) u;
 				if (defStmt.getRightOp() instanceof JDivExpr) {
-					System.out.println(defStmt.getRightOp());
-				}
-				
-			}
+					JDivExpr divExpr = (JDivExpr) defStmt.getRightOp();
+					Value rightOp = divExpr.getOp2();
 
+					if (rightOp instanceof IntConstant) {
+						// division by a constant
+						// check if constant is 0
+						IntConstant divisor = (IntConstant) rightOp;
+						if (divisor.value == 0) {
+							return false;
+						}
+					} else if (rightOp instanceof JimpleLocal) {
+						// check if divisor is a local variable
+						// check if local may be 0
+						JimpleLocal divisor = (JimpleLocal) rightOp;
+						System.out.println(u);
+						if (state.get().getBound(state.man, divisor.toString())
+								.cmp(new Interval(0, 0)) == 1) {
+							return false;
+						}
+					} else {
+						// TODO handle the case where divisor is not a constant
+						System.out.println("// TODO (div-by-zero): "
+								+ rightOp.getClass());
+						return false;
+					}
+				}
+			}
 		}
 
 		// Return false if the method may have division by zero errors
-		return false;
+		return true;
 	}
 
 	private static boolean verifyBounds(SootMethod method, Analysis fixPoint,
