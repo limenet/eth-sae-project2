@@ -20,7 +20,7 @@ public class TestMath {
 	public static void foobar(int n) {
 		int i = (1 + (2 + (3 + (4 + 5))) + n) / 0;
 	}
-	
+
 	public static void spam(int n) {
 		int i = 5 / n;
 	}

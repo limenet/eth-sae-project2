@@ -6,9 +6,8 @@ public class Test5 {
 		int p = 0;
 		if (n == 0) {
 			p = n;
-		}
-		else {
-			p = 1/n;
+		} else {
+			p = 1 / n;
 		}
 	}
 
