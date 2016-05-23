@@ -8,6 +8,8 @@ import java.util.List;
 
 import apron.ApronException;
 import soot.Unit;
+import soot.jimple.DefinitionStmt;
+import soot.jimple.internal.JIfStmt;
 import soot.jimple.internal.JInvokeStmt;
 import soot.jimple.internal.JSpecialInvokeExpr;
 import soot.jimple.internal.JVirtualInvokeExpr;
@@ -76,7 +78,7 @@ public class Verifier {
 				e.printStackTrace();
 			} 
 			
-			if (doWeNeedToHandleThis(u.getClass().getSimpleName())) {
+			if (u instanceof DefinitionStmt || u instanceof JIfStmt) {
 				//TODO: Check that all divisors are not zero
 			}
 			
@@ -157,18 +159,7 @@ public class Verifier {
 		PAG pag = (PAG) Scene.v().getPointsToAnalysis();
 
 		return pag;
-	}	
-	
-	public static boolean doWeNeedToHandleThis(String jConstruct) {
-		List<String> jimpleConstructsToHandle = new ArrayList<String>();
-		jimpleConstructsToHandle.addAll(Arrays.asList("DefinitionStmt",
-				"JMulExpr", "JSubExpr", "JAddExpr", "JDivExpr", "JIfStmt",
-				"JEqExpr", "JGeExpr", "JGtExpr", "JLeExpr", "JLtExpr",
-				"JNeExpr"));
-
-		return jimpleConstructsToHandle.contains(jConstruct);
 	}
-
 }
 
 class MyP2SetVisitor extends P2SetVisitor{
