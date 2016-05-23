@@ -1,10 +1,13 @@
 package ch.ethz.sae;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 
 import apron.ApronException;
 import soot.Unit;
-
 import soot.jimple.internal.JInvokeStmt;
 import soot.jimple.internal.JSpecialInvokeExpr;
 import soot.jimple.internal.JVirtualInvokeExpr;
@@ -63,6 +66,7 @@ public class Verifier {
 	private static boolean verifyDivisionByZero(SootMethod method, Analysis fixPoint) {
 		for (Unit u : method.retrieveActiveBody().getUnits()) {
 			AWrapper state = fixPoint.getFlowBefore(u);
+			
 			try {
 				if (state.get().isBottom(Analysis.man)) {
 	    			// unreachable code
@@ -72,7 +76,10 @@ public class Verifier {
 				e.printStackTrace();
 			} 
 			
-			//TODO: Check that all divisors are not zero
+			if (doWeNeedToHandleThis(u.getClass().getSimpleName())) {
+				//TODO: Check that all divisors are not zero
+			}
+			
 	    }
 		
 		//Return false if the method may have division by zero errors
@@ -151,6 +158,17 @@ public class Verifier {
 
 		return pag;
 	}	
+	
+	public static boolean doWeNeedToHandleThis(String jConstruct) {
+		List<String> jimpleConstructsToHandle = new ArrayList<String>();
+		jimpleConstructsToHandle.addAll(Arrays.asList("DefinitionStmt",
+				"JMulExpr", "JSubExpr", "JAddExpr", "JDivExpr", "JIfStmt",
+				"JEqExpr", "JGeExpr", "JGtExpr", "JLeExpr", "JLtExpr",
+				"JNeExpr"));
+
+		return jimpleConstructsToHandle.contains(jConstruct);
+	}
+
 }
 
 class MyP2SetVisitor extends P2SetVisitor{
