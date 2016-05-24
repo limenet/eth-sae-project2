@@ -1,6 +1,8 @@
 // DIV_OUTPUT = NO_DIV_ZERO
 // BOUNDS_OUTPUT = NO_OUT_OF_BOUNDS
 
+// if-clause
+
 public class Test5 {
 	public static void foo(int n) {
 		int p = 0;

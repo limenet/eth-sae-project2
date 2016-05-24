@@ -1,6 +1,8 @@
 // DIV_OUTPUT = MAY_DIV_ZERO
 // BOUNDS_OUTPUT = MAY_OUT_OF_BOUNDS
 
+// for-loop and if-clause
+
 public class Test4 {
 	public static void foo(int n) {
 		int p = 0;
@@ -8,7 +10,9 @@ public class Test4 {
 		for (int i = -5; i <= 5; i++) {
 			p = 1 / i;
 		}
-		pa.sendJob(n);
+		if (n >= 0) {
+			pa.sendJob(n);
+		}
 	}
 
 }
