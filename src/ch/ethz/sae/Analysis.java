@@ -230,7 +230,7 @@ public class Analysis extends ForwardBranchedFlowAnalysis<AWrapper> {
 		if (left instanceof IntConstant) {
 			lAr = new Texpr1CstNode(new MpqScalar(((IntConstant) left).value));
 		} else if (left instanceof JimpleLocal) {
-			if (left.getType().toString().equals("PrinterArray")) {
+			if (left.getType().toString().equals(Analysis.resourceArrayName)) {
 				ow.set(new Abstract1(man, in));
 				ow_branchout.set(new Abstract1(man, in));
 				return;
