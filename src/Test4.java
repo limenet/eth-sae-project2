@@ -14,4 +14,10 @@ public class Test4 {
 			pa.sendJob(n);
 		}
 	}
+	
+	public static void bar (PrinterArray pa) {
+		if (pa == null) {
+			
+		}
+	}
 }
