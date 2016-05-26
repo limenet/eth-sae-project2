@@ -12,5 +12,4 @@ public class Test5 {
 			p = 1 / n;
 		}
 	}
-
 }

@@ -1,5 +1,6 @@
 // DIV_OUTPUT = MAY_DIV_ZERO
 // BOUNDS_OUTPUT = NO_OUT_OF_BOUNDS
+
 public class TestMath {
 	public static void foo() {
 		int i;

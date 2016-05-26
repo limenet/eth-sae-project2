@@ -8,5 +8,4 @@ public class Test3 {
 		PrinterArray pa = new PrinterArray(10);
 		pa.sendJob(n);
 	}
-
 }
