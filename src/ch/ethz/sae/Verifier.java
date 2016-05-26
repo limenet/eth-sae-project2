@@ -155,7 +155,7 @@ public class Verifier {
 					// the variable varNameRight is being renamed to varNameLeft
 					initializedPAs.put(varNameLeft,
 							declaredPAs.get(varNameRight));
-				} else if (varNameRight.equals("new PrinterArray")) {
+				} else if (varNameRight.equals("new " + Analysis.resourceArrayName)) {
 				} else if (initializedPAs.containsKey(varNameRight)) {
 					// there is a reference to another, already initialized
 					// PrinterArray
