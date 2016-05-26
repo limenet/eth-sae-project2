@@ -1,24 +1,15 @@
 package ch.ethz.sae;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
 import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 
 import apron.ApronException;
-import apron.Coeff;
 import apron.Interval;
-import apron.Scalar;
 import soot.Unit;
 import soot.jimple.DefinitionStmt;
 import soot.jimple.IntConstant;
-import soot.jimple.internal.ImmediateBox;
 import soot.jimple.internal.JAssignStmt;
 import soot.jimple.internal.JDivExpr;
-import soot.jimple.internal.JIfStmt;
 import soot.jimple.internal.JInvokeStmt;
 import soot.jimple.internal.JSpecialInvokeExpr;
 import soot.jimple.internal.JVirtualInvokeExpr;
@@ -34,7 +25,6 @@ import soot.Scene;
 import soot.SootClass;
 import soot.SootMethod;
 import soot.Value;
-import soot.ValueBox;
 import soot.toolkits.graph.BriefUnitGraph;
 
 public class Verifier {
@@ -81,6 +71,10 @@ public class Verifier {
 			System.out.println(analyzedClass + " MAY_OUT_OF_BOUNDS");
 		}
 	}
+	
+	static void todo (String what) {
+		System.err.println("// TODO: " + what);
+	}
 
 	private static boolean verifyDivisionByZero(SootMethod method,
 			Analysis fixPoint) throws ApronException {
@@ -123,8 +117,7 @@ public class Verifier {
 						}
 					} else {
 						// TODO handle the case where divisor is not a constant
-						System.out.println("// TODO (div-by-zero): "
-								+ rightOp.getClass());
+						todo("divisor is not a constant "+ rightOp.getClass());
 						return false;
 					}
 				}
@@ -165,7 +158,7 @@ public class Verifier {
 					// the variable varNameRight is being renamed to varNameLeft
 					initializedPAs.put(varNameLeft,
 							declaredPAs.get(varNameRight));
-				} else if (varNameRight.equals("new PrinterArray")) {
+				} else if (varNameRight.equals("new " + Analysis.resourceArrayName)) {
 				} else if (initializedPAs.containsKey(varNameRight)) {
 					// there is a reference to another, already initialized
 					// PrinterArray
@@ -224,12 +217,12 @@ public class Verifier {
 					// implemented here.
 
 					if (!initializedPAs.containsKey(localName)) {
-						System.out.println("Unknown PrinterArray");
+						System.err.println("Unknown PrinterArray");
 						return false;
 					}
 
 					if (initializedPAs.get(localName) == null) {
-						System.out
+						System.err
 								.println("Invalid PrinterArray object (n=null)");
 						return false;
 					}
