@@ -172,6 +172,10 @@ public class Analysis extends ForwardBranchedFlowAnalysis<AWrapper> {
 	static void unhandled(String what) {
 		System.err.println("Can't handle " + what);
 	}
+	
+	static void todo (String what) {
+		System.err.println("// TODO: " + what);
+	}
 
 	private void handleDef(Abstract1 o, Value left, Value right)
 			throws ApronException {
