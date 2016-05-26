@@ -242,6 +242,33 @@ public class Analysis extends ForwardBranchedFlowAnalysis<AWrapper> {
 		}
 
 		// TODO: Handle required conditional expressions
+		if (eqExpr instanceof JEqExpr) {
+			// TODO
+			todo("eqExpr: JEqExpr");
+			JEqExpr eq = (JEqExpr) eqExpr;
+		} else if (eqExpr instanceof JNeExpr) {
+			// TODO
+			todo("eqExpr: JNeExpr");
+			JNeExpr ne = (JNeExpr) eqExpr;
+		} else if (eqExpr instanceof JGeExpr) {
+			// TODO
+			todo("eqExpr: JGeExpr");
+			JGeExpr ge = (JGeExpr) eqExpr;
+		} else if (eqExpr instanceof JLeExpr) {
+			// TODO
+			todo("eqExpr: JLeExpr");
+			JLeExpr le = (JLeExpr) eqExpr;
+		} else if (eqExpr instanceof JLtExpr) {
+			// TODO
+			todo("eqExpr: JLtExpr");
+			JLtExpr lt = (JLtExpr) eqExpr;
+		} else if (eqExpr instanceof JGtExpr) {
+			// TODO
+			todo("eqExpr: JGtExpr");
+			JGtExpr gt = (JGtExpr) eqExpr;
+		} else {
+			System.err.print("eqExpr: " + eqExpr.toString());
+		}
 	}
 
 	@Override
