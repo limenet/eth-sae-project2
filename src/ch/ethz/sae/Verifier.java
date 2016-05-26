@@ -71,6 +71,10 @@ public class Verifier {
 			System.out.println(analyzedClass + " MAY_OUT_OF_BOUNDS");
 		}
 	}
+	
+	static void todo (String what) {
+		System.err.println("// TODO: " + what);
+	}
 
 	private static boolean verifyDivisionByZero(SootMethod method,
 			Analysis fixPoint) throws ApronException {
@@ -113,8 +117,7 @@ public class Verifier {
 						}
 					} else {
 						// TODO handle the case where divisor is not a constant
-						System.out.println("// TODO (div-by-zero): "
-								+ rightOp.getClass());
+						todo("divisor is not a constant "+ rightOp.getClass());
 						return false;
 					}
 				}
