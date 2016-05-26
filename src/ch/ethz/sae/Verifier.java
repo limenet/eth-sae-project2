@@ -1,24 +1,15 @@
 package ch.ethz.sae;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
 import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 
 import apron.ApronException;
-import apron.Coeff;
 import apron.Interval;
-import apron.Scalar;
 import soot.Unit;
 import soot.jimple.DefinitionStmt;
 import soot.jimple.IntConstant;
-import soot.jimple.internal.ImmediateBox;
 import soot.jimple.internal.JAssignStmt;
 import soot.jimple.internal.JDivExpr;
-import soot.jimple.internal.JIfStmt;
 import soot.jimple.internal.JInvokeStmt;
 import soot.jimple.internal.JSpecialInvokeExpr;
 import soot.jimple.internal.JVirtualInvokeExpr;
@@ -34,7 +25,6 @@ import soot.Scene;
 import soot.SootClass;
 import soot.SootMethod;
 import soot.Value;
-import soot.ValueBox;
 import soot.toolkits.graph.BriefUnitGraph;
 
 public class Verifier {
