@@ -217,12 +217,12 @@ public class Verifier {
 					// implemented here.
 
 					if (!initializedPAs.containsKey(localName)) {
-						System.out.println("Unknown PrinterArray");
+						System.err.println("Unknown PrinterArray");
 						return false;
 					}
 
 					if (initializedPAs.get(localName) == null) {
-						System.out
+						System.err
 								.println("Invalid PrinterArray object (n=null)");
 						return false;
 					}
