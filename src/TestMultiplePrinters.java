@@ -7,11 +7,15 @@ public class TestMultiplePrinters {
 		PrinterArray pa2 = new PrinterArray(7);
 		PrinterArray pa3 = pa2;
 		PrinterArray pa4 = new PrinterArray(0);
+		PrinterArray pa5 = pa3;
+		int i = 2;
 		pa2.sendJob(1);
 		pa1.sendJob(2);
 		pa2.sendJob(3);
 		pa3.sendJob(4);
 		pa1.sendJob(4);
 		pa4.sendJob(0);
+		pa5.sendJob(1);
+		i++;
 	}
 }
