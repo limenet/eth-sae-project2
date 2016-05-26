@@ -1,6 +1,7 @@
 package ch.ethz.sae;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 import java.util.Arrays;
 
@@ -66,6 +67,7 @@ public class TestCases {
 						divOutputExpected });
 				output.add(new String[] { className + "-outOfBounds",
 						boundsOutputExpected });
+				output.add(new String[] { className + "-timing", "10000" });
 			}
 		}
 
@@ -80,20 +82,29 @@ public class TestCases {
 	public void test() throws IOException, InterruptedException {
 		String className = inputClass.split("-")[0];
 		String testType = inputClass.split("-")[1];
+		String run = cwd() + "/run.sh " + className;
 
-		String[] actualOutputOfTest = execCmd(cwd() + "/run.sh " + className)
-				.split("\\n");
-		for (int i = actualOutputOfTest.length - 2; i <= actualOutputOfTest.length - 1; i++) {
-			String output = actualOutputOfTest[i]
-					.substring(className.length() + 1);
-			if (output.contains("DIV_ZERO") && testType.equals("divByZero")) {
-				assertEquals(expected, output);
-			} else if (output.contains("OUT_OF_BOUNDS")
-					&& testType.equals("outOfBounds")) {
-				assertEquals(expected, output);
+		if (testType.equals("divByZero") || testType.equals("outOfBounds")) {
+			String[] actualOutputOfTest = execCmd(run).split("\\n");
+			for (int i = actualOutputOfTest.length - 2; i <= actualOutputOfTest.length - 1; i++) {
+				String output = actualOutputOfTest[i].substring(className
+						.length() + 1);
+				if (output.contains("DIV_ZERO") && testType.equals("divByZero")) {
+					assertEquals(expected, output);
+				} else if (output.contains("OUT_OF_BOUNDS")
+						&& testType.equals("outOfBounds")) {
+					assertEquals(expected, output);
+				}
 			}
 
+		} else if (testType.equals("timing")) {
+			long startTime = System.nanoTime();
+			execCmd(run);
+			long endTime = System.nanoTime();
+			long duration = (endTime - startTime) / 1000000;
+			assertTrue(duration < Integer.parseInt(expected));
 		}
+
 	}
 
 	// HELPERS
