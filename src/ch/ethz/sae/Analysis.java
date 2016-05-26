@@ -17,8 +17,10 @@ import apron.Texpr1Node;
 import apron.Texpr1VarNode;
 import soot.ArrayType;
 import soot.DoubleType;
+import soot.IntType;
 import soot.IntegerType;
 import soot.Local;
+import soot.PrimType;
 import soot.RefType;
 import soot.SootClass;
 import soot.SootField;
@@ -180,21 +182,44 @@ public class Analysis extends ForwardBranchedFlowAnalysis<AWrapper> {
 		Texpr1Node rAr = null;
 		Texpr1Intern xp = null;
 
+		System.out.println(right.getType());
 		if (left instanceof JimpleLocal) {
 			String varName = ((JimpleLocal) left).getName();
 
 			if (right instanceof IntConstant) {
-				IntConstant constant = ((IntConstant) right);
+				IntConstant constant = (IntConstant) right;
 				rAr = new Texpr1CstNode(new MpqScalar(constant.value));
 				xp = new Texpr1Intern(env, rAr);
 				o.assign(man, varName, xp, null);
-			} else if (right instanceof JimpleLocal) {
+			} else if (right instanceof JimpleLocal && ((JimpleLocal) right).getType() instanceof PrimType) {
 				JimpleLocal local = (JimpleLocal) right;
-				// Interval r = o.getBound(man, local.getName());
-				rAr = new Texpr1VarNode(varName);
+				rAr = new Texpr1VarNode(local.getName());
+				xp = new Texpr1Intern(env, rAr);
+				o.assign(man, varName, xp, null);
 				// TODO: ParameterRef as well?
 			} else if (right instanceof JMulExpr) {
 				JMulExpr mulExpr = (JMulExpr) right;
+				Interval op1 = null, op2 = null;
+				if (mulExpr.getOp1() instanceof IntConstant) {
+					int op1Value = ((IntConstant) mulExpr.getOp1()).value;
+					op1 = new Interval(op1Value, op1Value);
+				} else if (mulExpr.getOp1() instanceof JimpleLocal) {
+					op1 = o.getBound(man, ((JimpleLocal) mulExpr.getOp1()).getName());
+				} else {
+					System.out.println("// TODO: handle MulExpr: " + mulExpr.getOp1().getClass());
+				}
+				
+				if (mulExpr.getOp2() instanceof IntConstant) {
+					int op2Value = ((IntConstant) mulExpr.getOp2()).value;
+					op2 = new Interval(op2Value, op2Value);
+				} else if (mulExpr.getOp2() instanceof JimpleLocal) {
+					op2 = o.getBound(man, ((JimpleLocal) mulExpr.getOp2()).getName());
+				} else {
+					System.out.println("// TODO: handle MulExpr: " + mulExpr.getOp2().getClass());
+				}
+				
+				System.out.println(op1);
+				System.out.println(op2);
 				// TODO
 			} else if (right instanceof JSubExpr) {
 				JSubExpr subExpr = (JSubExpr) right;
