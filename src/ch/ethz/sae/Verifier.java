@@ -117,7 +117,6 @@ public class Verifier {
 						// check if divisor is a local variable
 						// check if local may be 0
 						JimpleLocal divisor = (JimpleLocal) rightOp;
-						System.out.println(u);
 						if (state.get().getBound(state.man, divisor.toString())
 								.cmp(new Interval(0, 0)) == 1) {
 							return false;
@@ -137,7 +136,7 @@ public class Verifier {
 	}
 
 	private static boolean verifyBounds(SootMethod method, Analysis fixPoint,
-			PAG pointsTo) {
+			PAG pointsTo) throws ApronException {
 
 		// TODO: Create a list of all allocation sites for PrinterArray
 
@@ -163,17 +162,16 @@ public class Verifier {
 				String varNameRight = assignStmt.getRightOp().toString();
 
 				if (declaredPAs.containsKey(varNameRight)) {
-					System.out.println("renaming " + varNameRight + " to "
-							+ varNameLeft);
+					// the variable varNameRight is being renamed to varNameLeft
 					initializedPAs.put(varNameLeft,
 							declaredPAs.get(varNameRight));
 				} else if (varNameRight.equals("new PrinterArray")) {
 				} else if (initializedPAs.containsKey(varNameRight)) {
-					System.out.println(">> " + varNameLeft + ": "
-							+ varNameRight);
+					// there is a reference to another, already initialized
+					// PrinterArray
+					// look up that value (non-recursively!)
 					initializedPAs.put(varNameLeft,
 							initializedPAs.get(varNameRight));
-					System.out.println(initializedPAs.get(varNameRight));
 				}
 			}
 
@@ -188,10 +186,9 @@ public class Verifier {
 				Value argValue = invokeStmt.getInvokeExpr().getArg(0);
 				int argInt = ((IntConstant) argValue).value;
 
-				// System.out.println(state.getStatement());
 				String localName = ((JimpleLocalBox) invokeStmt.getInvokeExpr()
 						.getUseBoxes().get(0)).getValue().toString();
-				System.out.println("init " + localName + " with " + argInt);
+				// localName is initialized with argInt
 
 				declaredPAs.put(localName, argInt);
 
@@ -216,17 +213,13 @@ public class Verifier {
 					// within bounds
 
 					Value argValue = jInvStmt.getInvokeExpr().getArg(0);
-					int argInt = ((IntConstant) argValue).value;
 
 					String localName = ((JimpleLocalBox) jInvStmt
 							.getInvokeExpr().getUseBoxes().get(0)).getValue()
 							.toString();
-					System.out.println(localName + ": parameter: " + argInt
-							+ ", constructed with "
-							+ initializedPAs.get(localName));
 
 					// @limenet 2016-05-23 17:38
-					// The following three if-statements are a very basic
+					// The following if-statements are a very basic
 					// form of bounds-checking. No pointer analysis etc. is
 					// implemented here.
 
@@ -241,9 +234,26 @@ public class Verifier {
 						return false;
 					}
 
-					if (argInt >= initializedPAs.get(localName)) {
-						return false;
+					if (argValue instanceof IntConstant) {
+						int argInt = ((IntConstant) argValue).value;
+
+						// localName is called with argInt and was initialized
+						// with initializedPAs.get(localName)
+
+						if (argInt >= initializedPAs.get(localName)) {
+							return false;
+						}
+					} else if (argValue instanceof JimpleLocal) {
+						JimpleLocal arg = ((JimpleLocal) argValue);
+						if (state
+								.get()
+								.getBound(state.man, arg.toString())
+								.cmp(new Interval(0, initializedPAs
+										.get(localName) - 1)) == 1) {
+							return false;
+						}
 					}
+
 					// Visit all allocation sites that the base pointer may
 					// reference
 					MyP2SetVisitor visitor = new MyP2SetVisitor();
