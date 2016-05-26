@@ -167,6 +167,13 @@ public class Verifier {
 							+ varNameLeft);
 					initializedPAs.put(varNameLeft,
 							declaredPAs.get(varNameRight));
+				} else if (varNameRight.equals("new PrinterArray")) {
+				} else if (initializedPAs.containsKey(varNameRight)) {
+					System.out.println(">> " + varNameLeft + ": "
+							+ varNameRight);
+					initializedPAs.put(varNameLeft,
+							initializedPAs.get(varNameRight));
+					System.out.println(initializedPAs.get(varNameRight));
 				}
 			}
 
@@ -182,12 +189,11 @@ public class Verifier {
 				int argInt = ((IntConstant) argValue).value;
 
 				// System.out.println(state.getStatement());
-				System.out.println("init with " + argInt);
 				String localName = ((JimpleLocalBox) invokeStmt.getInvokeExpr()
 						.getUseBoxes().get(0)).getValue().toString();
+				System.out.println("init " + localName + " with " + argInt);
 
 				declaredPAs.put(localName, argInt);
-
 
 			}
 
