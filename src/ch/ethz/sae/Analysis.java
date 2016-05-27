@@ -257,6 +257,7 @@ public class Analysis extends ForwardBranchedFlowAnalysis<AWrapper> {
 				*/
 			}
 			// TODO: Handle other kinds of assignments (e.g. x = y * z)
+			// @andrinadenzler 2016-05-27 14:46 implemented except for some potential corner cases
 			else {
 				todo("handleDef: forget: " + right.getClass());
 				if (o.getEnvironment().hasVar(varName)) {
