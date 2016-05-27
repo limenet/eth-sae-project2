@@ -8,9 +8,11 @@ import apron.Abstract1;
 import apron.ApronException;
 import apron.Environment;
 import apron.Interval;
+import apron.Linexpr1;
 import apron.Manager;
 import apron.MpqScalar;
 import apron.Polka;
+import apron.Texpr1BinNode;
 import apron.Texpr1CstNode;
 import apron.Texpr1Intern;
 import apron.Texpr1Node;
@@ -30,6 +32,7 @@ import soot.jimple.DefinitionStmt;
 import soot.jimple.IfStmt;
 import soot.jimple.IntConstant;
 import soot.jimple.InvokeExpr;
+import soot.jimple.ParameterRef;
 import soot.jimple.Stmt;
 import soot.jimple.internal.AbstractBinopExpr;
 import soot.jimple.internal.JAddExpr;
@@ -195,48 +198,101 @@ public class Analysis extends ForwardBranchedFlowAnalysis<AWrapper> {
 				rAr = new Texpr1CstNode(new MpqScalar(constant.value));
 				xp = new Texpr1Intern(env, rAr);
 				o.assign(man, varName, xp, null);
-			} else if (right instanceof JimpleLocal && ((JimpleLocal) right).getType() instanceof PrimType) {
+			} else if (right instanceof JimpleLocal) {
 				JimpleLocal local = (JimpleLocal) right;
-				rAr = new Texpr1VarNode(local.getName());
-				xp = new Texpr1Intern(env, rAr);
-				o.assign(man, varName, xp, null);
-				// TODO: ParameterRef as well?
+				if (isIntValue(local)) {
+					/*
+					AWrapper state = new AWrapper(o);
+					Interval i = getInterval(state, local);
+					*/
+					rAr = new Texpr1VarNode(local.getName());
+					xp = new Texpr1Intern(env, rAr);
+					o.assign(man, varName, xp, null);
+				} else {
+					// TODO
+					todo("handelDef: JimpleLocal of type: " + local.getType());
+				}
+			} else if (right instanceof ParameterRef) {
+				// TODO
+				todo("handleDef: ParamerRef");
 			} else if (right instanceof JMulExpr) {
 				JMulExpr mulExpr = (JMulExpr) right;
-				Interval op1 = null, op2 = null;
+
+				Texpr1Node op1 = null;
 				if (mulExpr.getOp1() instanceof IntConstant) {
-					int op1Value = ((IntConstant) mulExpr.getOp1()).value;
-					op1 = new Interval(op1Value, op1Value);
+					IntConstant constant = (IntConstant) mulExpr.getOp1();
+					op1 = new Texpr1CstNode(new MpqScalar(constant.value));
 				} else if (mulExpr.getOp1() instanceof JimpleLocal) {
-					op1 = o.getBound(man, ((JimpleLocal) mulExpr.getOp1()).getName());
+					JimpleLocal local = (JimpleLocal) mulExpr.getOp1();
+					op1 = new Texpr1VarNode(local.getName());
 				} else {
-					System.out.println("// TODO: handle MulExpr: " + mulExpr.getOp1().getClass());
+					System.err.println("handleDef: JMulExpr operand type: " + mulExpr.getOp1().getType());
 				}
 				
+				Texpr1Node op2 = null;
 				if (mulExpr.getOp2() instanceof IntConstant) {
-					int op2Value = ((IntConstant) mulExpr.getOp2()).value;
-					op2 = new Interval(op2Value, op2Value);
+					IntConstant constant = (IntConstant) mulExpr.getOp2();
+					op2 = new Texpr1CstNode(new MpqScalar(constant.value));
 				} else if (mulExpr.getOp2() instanceof JimpleLocal) {
-					op2 = o.getBound(man, ((JimpleLocal) mulExpr.getOp2()).getName());
+					JimpleLocal local = (JimpleLocal) mulExpr.getOp2();
+					op2 = new Texpr1VarNode(local.getName());
 				} else {
-					System.out.println("// TODO: handle MulExpr: " + mulExpr.getOp2().getClass());
+					System.err.println("handleDef: JMulExpr operand type: " + mulExpr.getOp2().getType());
 				}
-				
-				System.out.println(op1);
-				System.out.println(op2);
-				// TODO
+
+				rAr = new Texpr1BinNode(Texpr1BinNode.OP_MUL, op1, op2);
+				xp = new Texpr1Intern(env, rAr);
+				o.assign(man, varName, xp, null);
+
+				AWrapper state = new AWrapper(o);
+				System.out.println("Mul_Op1: " + getInterval(state, mulExpr.getOp1()));
+				System.out.println("Mul_Op2: " + getInterval(state, mulExpr.getOp2()));
+				System.out.println("Mul_Res: " + getInterval(state, left));
 			} else if (right instanceof JSubExpr) {
 				JSubExpr subExpr = (JSubExpr) right;
-				// TOOD
+
+				Texpr1Node op1 = null;
+				if (subExpr.getOp1() instanceof IntConstant) {
+					IntConstant constant = (IntConstant) subExpr.getOp1();
+					op1 = new Texpr1CstNode(new MpqScalar(constant.value));
+				} else if (subExpr.getOp1() instanceof JimpleLocal) {
+					JimpleLocal local = (JimpleLocal) subExpr.getOp1();
+					op1 = new Texpr1VarNode(local.getName());
+				} else {
+					System.err.println("handleDef: JSubExpr operand type: " + subExpr.getOp1().getType());
+				}
+				
+				Texpr1Node op2 = null;
+				if (subExpr.getOp2() instanceof IntConstant) {
+					IntConstant constant = (IntConstant) subExpr.getOp2();
+					op2 = new Texpr1CstNode(new MpqScalar(constant.value));
+				} else if (subExpr.getOp2() instanceof JimpleLocal) {
+					JimpleLocal local = (JimpleLocal) subExpr.getOp2();
+					op2 = new Texpr1VarNode(local.getName());
+				} else {
+					System.err.println("handleDef: JSubExpr operand type: " + subExpr.getOp2().getType());
+				}
+
+				rAr = new Texpr1BinNode(Texpr1BinNode.OP_SUB, op1, op2);
+				xp = new Texpr1Intern(env, rAr);
+				o.assign(man, varName, xp, null);
+
+				AWrapper state = new AWrapper(o);
+				System.out.println("Sub_Op1: " + getInterval(state, subExpr.getOp1()));
+				System.out.println("Sub_Op2: " + getInterval(state, subExpr.getOp2()));
+				System.out.println("Sub_Res: " + getInterval(state, left));
 			} else if (right instanceof JAddExpr) {
 				JAddExpr addExpr = (JAddExpr) right;
 				// TODO
+				todo("handleDef: JAddExpr");
 			} else if (right instanceof JDivExpr) {
 				JDivExpr divExpr = (JDivExpr) right;
 				// TODO
+				todo("handleDef: JDivExpr");
 			}
 			// TODO: Handle other kinds of assignments (e.g. x = y * z)
 			else {
+				todo("handleDef: forget: " + right.getClass());
 				if (o.getEnvironment().hasVar(varName)) {
 					o.forget(man, varName, false);
 				}
