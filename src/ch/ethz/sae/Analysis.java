@@ -211,29 +211,32 @@ public class Analysis extends ForwardBranchedFlowAnalysis<AWrapper> {
 			} else if (right instanceof ParameterRef) {
 				// TODO
 				todo("handleDef: ParamerRef");
-			} else if (right instanceof BinopExpr) {
-				BinopExpr binopExpr = (BinopExpr) right;
+			} else if (right instanceof AbstractBinopExpr) {
+				AbstractBinopExpr binopExpr = (AbstractBinopExpr) right;
+
+				Value leftOp = binopExpr.getOp1();
+				Value rightOp = binopExpr.getOp2();
 
 				Texpr1Node op1 = null;
-				if (binopExpr.getOp1() instanceof IntConstant) {
-					IntConstant constant = (IntConstant) binopExpr.getOp1();
-					op1 = new Texpr1CstNode(new MpqScalar(constant.value));
-				} else if (binopExpr.getOp1() instanceof JimpleLocal) {
-					JimpleLocal local = (JimpleLocal) binopExpr.getOp1();
-					op1 = new Texpr1VarNode(local.getName());
+
+				if (leftOp instanceof IntConstant) {
+					op1 = new Texpr1CstNode(new MpqScalar(((IntConstant) leftOp).value));
+				} else if (leftOp instanceof JimpleLocal) {
+					op1 = new Texpr1VarNode(((JimpleLocal) leftOp).getName());
 				} else {
-					System.err.println("handleDef: BinopExpr operand type: " + binopExpr.getOp1().getType());
+					System.err.println("handleIf: binopExpr unexpected leftOp operand type: " + leftOp.getType()
+							+ " class: " + leftOp.getClass());
 				}
 
 				Texpr1Node op2 = null;
-				if (binopExpr.getOp2() instanceof IntConstant) {
-					IntConstant constant = (IntConstant) binopExpr.getOp2();
-					op2 = new Texpr1CstNode(new MpqScalar(constant.value));
-				} else if (binopExpr.getOp2() instanceof JimpleLocal) {
-					JimpleLocal local = (JimpleLocal) binopExpr.getOp2();
-					op2 = new Texpr1VarNode(local.getName());
+
+				if (rightOp instanceof IntConstant) {
+					op2 = new Texpr1CstNode(new MpqScalar(((IntConstant) rightOp).value));
+				} else if (rightOp instanceof JimpleLocal) {
+					op2 = new Texpr1VarNode(((JimpleLocal) rightOp).getName());
 				} else {
-					System.err.println("handleDef: BinopExpr operand type: " + binopExpr.getOp2().getType());
+					System.err.println("handleDef: binopExpr unexpected rightOp operand type: " + rightOp.getType()
+							+ " class: " + rightOp.getClass());
 				}
 
 				if (binopExpr instanceof JMulExpr) {
@@ -251,9 +254,9 @@ public class Analysis extends ForwardBranchedFlowAnalysis<AWrapper> {
 
 				/*
 				AWrapper state = new AWrapper(o);
-				System.out.println("Bin_Op1: " + getInterval(state, binopExpr.getOp1()));
-				System.out.println("Bin_Op2: " + getInterval(state, binopExpr.getOp2()));
-				System.out.println("Bin_Res: " + getInterval(state, left));
+				System.out.println("Bin_Op1: " + getInterval(state, leftOp));
+				System.out.println("Bin_Op2: " + getInterval(state, rightOp));
+				System.out.println("Bin_Res: " + getInterval(state, left) + binopExpr.getClass());
 				*/
 			}
 			// TODO: Handle other kinds of assignments (e.g. x = y * z)
@@ -270,23 +273,35 @@ public class Analysis extends ForwardBranchedFlowAnalysis<AWrapper> {
 	private void handleIf(AbstractBinopExpr eqExpr, Abstract1 in, AWrapper ow,
 			AWrapper ow_branchout) throws ApronException {
 
-		Value left = eqExpr.getOp1();
-		Value right = eqExpr.getOp2();
+		Value leftOp = eqExpr.getOp1();
+		Value rightOp = eqExpr.getOp2();
 
-		Texpr1Node lAr = null;
+		Texpr1Node op1 = null;
 
-		if (left instanceof IntConstant) {
-			lAr = new Texpr1CstNode(new MpqScalar(((IntConstant) left).value));
-		} else if (left instanceof JimpleLocal) {
-			if (left.getType().toString().equals(Analysis.resourceArrayName)) {
+		if (leftOp instanceof IntConstant) {
+			op1 = new Texpr1CstNode(new MpqScalar(((IntConstant) leftOp).value));
+		} else if (leftOp instanceof JimpleLocal) {
+			if (leftOp.getType().toString().equals(Analysis.resourceArrayName)) {
 				ow.set(new Abstract1(man, in));
 				ow_branchout.set(new Abstract1(man, in));
 				return;
+				// TODO: consider this case in other parts as well?
 			}
-			lAr = new Texpr1VarNode(((JimpleLocal) left).getName());
+			op1 = new Texpr1VarNode(((JimpleLocal) leftOp).getName());
 		} else {
-			System.out.println("left: unexpected:" + left.getClass() + " name:"
-					+ ((JimpleLocal) left).getName());
+			System.err.println("handleIf: eqExpr unexpected leftOp operand type: " + leftOp.getType()
+					+ " class: " + leftOp.getClass());
+		}
+
+		Texpr1Node op2 = null;
+
+		if (rightOp instanceof IntConstant) {
+			op2 = new Texpr1CstNode(new MpqScalar(((IntConstant) rightOp).value));
+		} else if (rightOp instanceof JimpleLocal) {
+			op2 = new Texpr1VarNode(((JimpleLocal) rightOp).getName());
+		} else {
+			System.err.println("handleDef: binopExpr unexpected rightOp operand type: " + rightOp.getType()
+					+ " class: " + rightOp.getClass());
 		}
 
 		// TODO: Handle required conditional expressions
