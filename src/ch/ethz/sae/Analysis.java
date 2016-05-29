@@ -305,10 +305,15 @@ public class Analysis extends ForwardBranchedFlowAnalysis<AWrapper> {
 
 		Texpr1Node lmrExpr = new Texpr1BinNode(Texpr1BinNode.OP_SUB, leftNode, rightNode);
 		Texpr1Node rmlExpr = new Texpr1BinNode(Texpr1BinNode.OP_SUB, rightNode, leftNode);
+
+		// Constraints we add to the abstract element are of one of these two forms:
+		// - leftNode - rightNode (cmp_kind) 0, e.g., lmrExpr >= 0
+		// - rightNode - leftNode (cmp_kind) 0, e.g., rmlExpr == 0
 		Tcons1 branchCons = null, fallCons = null;
 
 		// TODO: Handle required conditional expressions
-		// @andrinadenzler 2016-05-29 20:16 implemented except for imprecision in cases like (n != 0)
+		// @andrinadenzler 2016-05-29 20:16 implemented except for imprecision in cases like (n != 0):
+		// (n != 0) is treated as (n in [-oo,+oo]) and provides no constraint on n at all
 		if (eqExpr instanceof JEqExpr) {
 			branchCons = new Tcons1(env, Tcons1.EQ, lmrExpr);
 			fallCons = new Tcons1(env, Tcons1.DISEQ, lmrExpr);
