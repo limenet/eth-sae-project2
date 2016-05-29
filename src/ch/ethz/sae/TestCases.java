@@ -29,8 +29,25 @@ public class TestCases {
 	@Parameter(1)
 	public String expected;
 
+	public String[] output = new String[2];
+
+	public long execTime;
+
 	@Before
 	public void setUp() throws Exception {
+		String className = inputClass.split("-")[0];
+		String run = cwd() + "/run.sh " + className;
+		long startTime = System.nanoTime();
+		String actualOutputOfTest = execCmd(run);
+		long endTime = System.nanoTime();
+		String[] outputSplitted = actualOutputOfTest.split("\\n");
+		this.execTime = (endTime - startTime) / 1000000;
+
+		int j = 0;
+		for (int i = outputSplitted.length - 2; i <= outputSplitted.length - 1; i++) {
+			output[j] = outputSplitted[i].substring(className.length() + 1);
+			j++;
+		}
 	}
 
 	@Parameters(name = "{0}")
@@ -63,11 +80,12 @@ public class TestCases {
 				String className = pathParts[pathParts.length - 1];
 				className = className.substring(0, className.length() - 5);
 
-				output.add(new String[] { className + "-divByZero",
-						divOutputExpected });
-				output.add(new String[] { className + "-outOfBounds",
-						boundsOutputExpected });
-				output.add(new String[] { className + "-timing", "10000" });
+				output.add(new String[] {
+						className,
+						divOutputExpected + "|" + boundsOutputExpected
+								+ "|10000"
+
+				});
 			}
 		}
 
@@ -79,32 +97,18 @@ public class TestCases {
 	}
 
 	@Test
-	public void test() throws IOException, InterruptedException {
-		String className = inputClass.split("-")[0];
-		String testType = inputClass.split("-")[1];
-		String run = cwd() + "/run.sh " + className;
+	public void testDivByZero() {
+		assertEquals(expected.split("\\|")[0], output[0]);
+	}
 
-		if (testType.equals("divByZero") || testType.equals("outOfBounds")) {
-			String[] actualOutputOfTest = execCmd(run).split("\\n");
-			for (int i = actualOutputOfTest.length - 2; i <= actualOutputOfTest.length - 1; i++) {
-				String output = actualOutputOfTest[i].substring(className
-						.length() + 1);
-				if (output.contains("DIV_ZERO") && testType.equals("divByZero")) {
-					assertEquals(expected, output);
-				} else if (output.contains("OUT_OF_BOUNDS")
-						&& testType.equals("outOfBounds")) {
-					assertEquals(expected, output);
-				}
-			}
+	@Test
+	public void testOutOfBounds() {
+		assertEquals(expected.split("\\|")[1], output[1]);
+	}
 
-		} else if (testType.equals("timing")) {
-			long startTime = System.nanoTime();
-			execCmd(run);
-			long endTime = System.nanoTime();
-			long duration = (endTime - startTime) / 1000000;
-			assertTrue(duration < Integer.parseInt(expected));
-		}
-
+	@Test
+	public void testExecutionTime() {
+		assertTrue(this.execTime < Integer.parseInt(expected.split("\\|")[2]));
 	}
 
 	// HELPERS
