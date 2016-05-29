@@ -1,7 +1,7 @@
 // DIV_OUTPUT = NO_DIV_ZERO
 // BOUNDS_OUTPUT = NO_OUT_OF_BOUNDS
 
-public class Test20Timon {
+public class Test20Elias {
 	public static void foo(PrinterArray pa) {
 		int b = 1;
 		for (int j = 2; j < 10; j++) {
