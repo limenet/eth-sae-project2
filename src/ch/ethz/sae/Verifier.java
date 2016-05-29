@@ -5,6 +5,7 @@ import java.util.Map;
 
 import apron.ApronException;
 import apron.Interval;
+import apron.MpqScalar;
 import soot.Unit;
 import soot.jimple.DefinitionStmt;
 import soot.jimple.IntConstant;
@@ -111,10 +112,11 @@ public class Verifier {
 						// check if divisor is a local variable
 						// check if local may be 0
 						JimpleLocal divisor = (JimpleLocal) rightOp;
-						if (state.get().getBound(state.man, divisor.toString())
-								.cmp(new Interval(0, 0)) == 1) {
+						int cmp = state.get().getBound(state.man, divisor.toString()).cmp(new MpqScalar(0));
+						if (cmp == 0 || cmp == 1) {
 							return false;
 						}
+
 					} else {
 						// TODO handle the case where divisor is not a constant
 						todo("divisor is not a constant "+ rightOp.getClass());
