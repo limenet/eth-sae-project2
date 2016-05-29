@@ -8,10 +8,12 @@ import apron.Abstract1;
 import apron.ApronException;
 import apron.Environment;
 import apron.Interval;
+import apron.Lincons1;
 import apron.Linexpr1;
 import apron.Manager;
 import apron.MpqScalar;
 import apron.Polka;
+import apron.Tcons1;
 import apron.Texpr1BinNode;
 import apron.Texpr1CstNode;
 import apron.Texpr1Intern;
@@ -217,47 +219,45 @@ public class Analysis extends ForwardBranchedFlowAnalysis<AWrapper> {
 				Value leftOp = binopExpr.getOp1();
 				Value rightOp = binopExpr.getOp2();
 
-				Texpr1Node op1 = null;
+				Texpr1Node leftNode = null;
 
 				if (leftOp instanceof IntConstant) {
-					op1 = new Texpr1CstNode(new MpqScalar(((IntConstant) leftOp).value));
+					leftNode = new Texpr1CstNode(new MpqScalar(((IntConstant) leftOp).value));
 				} else if (leftOp instanceof JimpleLocal) {
-					op1 = new Texpr1VarNode(((JimpleLocal) leftOp).getName());
+					leftNode = new Texpr1VarNode(((JimpleLocal) leftOp).getName());
 				} else {
 					System.err.println("handleIf: binopExpr unexpected leftOp operand type: " + leftOp.getType()
 							+ " class: " + leftOp.getClass());
 				}
 
-				Texpr1Node op2 = null;
+				Texpr1Node rightNode = null;
 
 				if (rightOp instanceof IntConstant) {
-					op2 = new Texpr1CstNode(new MpqScalar(((IntConstant) rightOp).value));
+					rightNode = new Texpr1CstNode(new MpqScalar(((IntConstant) rightOp).value));
 				} else if (rightOp instanceof JimpleLocal) {
-					op2 = new Texpr1VarNode(((JimpleLocal) rightOp).getName());
+					rightNode = new Texpr1VarNode(((JimpleLocal) rightOp).getName());
 				} else {
 					System.err.println("handleDef: binopExpr unexpected rightOp operand type: " + rightOp.getType()
 							+ " class: " + rightOp.getClass());
 				}
 
 				if (binopExpr instanceof JMulExpr) {
-					rAr = new Texpr1BinNode(Texpr1BinNode.OP_MUL, op1, op2);
+					rAr = new Texpr1BinNode(Texpr1BinNode.OP_MUL, leftNode, rightNode);
 				} else if (binopExpr instanceof JSubExpr) {
-					rAr = new Texpr1BinNode(Texpr1BinNode.OP_SUB, op1, op2);
+					rAr = new Texpr1BinNode(Texpr1BinNode.OP_SUB, leftNode, rightNode);
 				} else if (binopExpr instanceof JAddExpr) {
-					rAr = new Texpr1BinNode(Texpr1BinNode.OP_ADD, op1, op2);
+					rAr = new Texpr1BinNode(Texpr1BinNode.OP_ADD, leftNode, rightNode);
 				} else if (binopExpr instanceof JDivExpr) {
-					rAr = new Texpr1BinNode(Texpr1BinNode.OP_DIV, op1, op2);
+					rAr = new Texpr1BinNode(Texpr1BinNode.OP_DIV, leftNode, rightNode);
 				}
 
 				xp = new Texpr1Intern(env, rAr);
 				o.assign(man, varName, xp, null);
 
-				/*
 				AWrapper state = new AWrapper(o);
 				System.out.println("Bin_Op1: " + getInterval(state, leftOp));
 				System.out.println("Bin_Op2: " + getInterval(state, rightOp));
 				System.out.println("Bin_Res: " + getInterval(state, left) + binopExpr.getClass());
-				*/
 			}
 			// TODO: Handle other kinds of assignments (e.g. x = y * z)
 			// @andrinadenzler 2016-05-27 14:46 implemented except for some potential corner cases
@@ -276,62 +276,90 @@ public class Analysis extends ForwardBranchedFlowAnalysis<AWrapper> {
 		Value leftOp = eqExpr.getOp1();
 		Value rightOp = eqExpr.getOp2();
 
-		Texpr1Node op1 = null;
+		Texpr1Node leftNode = null;
 
 		if (leftOp instanceof IntConstant) {
-			op1 = new Texpr1CstNode(new MpqScalar(((IntConstant) leftOp).value));
+			leftNode = new Texpr1CstNode(new MpqScalar(((IntConstant) leftOp).value));
 		} else if (leftOp instanceof JimpleLocal) {
 			if (leftOp.getType().toString().equals(Analysis.resourceArrayName)) {
 				ow.set(new Abstract1(man, in));
 				ow_branchout.set(new Abstract1(man, in));
+				todo("handleIf: PrinterArray in eqExpr"); // TODO: @andrinadenzler: consider this case in other parts as well?
 				return;
-				// TODO: consider this case in other parts as well?
 			}
-			op1 = new Texpr1VarNode(((JimpleLocal) leftOp).getName());
+			leftNode = new Texpr1VarNode(((JimpleLocal) leftOp).getName());
 		} else {
 			System.err.println("handleIf: eqExpr unexpected leftOp operand type: " + leftOp.getType()
 					+ " class: " + leftOp.getClass());
 		}
 
-		Texpr1Node op2 = null;
+		Texpr1Node rightNode = null;
 
 		if (rightOp instanceof IntConstant) {
-			op2 = new Texpr1CstNode(new MpqScalar(((IntConstant) rightOp).value));
+			rightNode = new Texpr1CstNode(new MpqScalar(((IntConstant) rightOp).value));
 		} else if (rightOp instanceof JimpleLocal) {
-			op2 = new Texpr1VarNode(((JimpleLocal) rightOp).getName());
+			if (rightOp.getType().toString().equals(Analysis.resourceArrayName)) {
+				todo("handleIf: PrinterArray in eqExpr");
+				return;
+			}
+			rightNode = new Texpr1VarNode(((JimpleLocal) rightOp).getName());
 		} else {
-			System.err.println("handleDef: binopExpr unexpected rightOp operand type: " + rightOp.getType()
-					+ " class: " + rightOp.getClass());
+			System.err.println("handleDef: binopExpr unexpected rightOp operand type: " + rightOp.getType()
+					+ " class: " + rightOp.getClass());
 		}
+
+		Texpr1Node lmrExpr = new Texpr1BinNode(Texpr1BinNode.OP_SUB, leftNode, rightNode);
+		Texpr1Node rmlExpr = new Texpr1BinNode(Texpr1BinNode.OP_SUB, rightNode, leftNode);
+		Tcons1 yesCons = null, noCons = null;
 
 		// TODO: Handle required conditional expressions
 		if (eqExpr instanceof JEqExpr) {
+			yesCons = new Tcons1(env, Tcons1.EQ, lmrExpr);
+			noCons = new Tcons1(env, Tcons1.DISEQ, lmrExpr);
 			// TODO
 			todo("eqExpr: JEqExpr");
 			JEqExpr eq = (JEqExpr) eqExpr;
 		} else if (eqExpr instanceof JNeExpr) {
+			yesCons = new Tcons1(env, Tcons1.DISEQ, lmrExpr);
+			noCons = new Tcons1(env, Tcons1.EQ, lmrExpr);
 			// TODO
 			todo("eqExpr: JNeExpr");
 			JNeExpr ne = (JNeExpr) eqExpr;
 		} else if (eqExpr instanceof JGeExpr) {
+			yesCons = new Tcons1(env, Tcons1.SUPEQ, lmrExpr);
+			noCons = new Tcons1(env, Tcons1.SUP, rmlExpr);
 			// TODO
 			todo("eqExpr: JGeExpr");
 			JGeExpr ge = (JGeExpr) eqExpr;
+		} else if (eqExpr instanceof JGtExpr) {
+			yesCons = new Tcons1(env, Tcons1.SUP, lmrExpr);
+			noCons = new Tcons1(env, Tcons1.SUPEQ, rmlExpr);
+			// TODO
+			todo("eqExpr: JGtExpr");
+			JGtExpr gt = (JGtExpr) eqExpr;
 		} else if (eqExpr instanceof JLeExpr) {
+			yesCons = new Tcons1(env, Tcons1.SUPEQ, rmlExpr);
+			noCons = new Tcons1(env, Tcons1.SUP, lmrExpr);
 			// TODO
 			todo("eqExpr: JLeExpr");
 			JLeExpr le = (JLeExpr) eqExpr;
 		} else if (eqExpr instanceof JLtExpr) {
+			yesCons = new Tcons1(env, Tcons1.SUP, rmlExpr);
+			noCons = new Tcons1(env, Tcons1.SUPEQ, lmrExpr);
 			// TODO
 			todo("eqExpr: JLtExpr");
 			JLtExpr lt = (JLtExpr) eqExpr;
-		} else if (eqExpr instanceof JGtExpr) {
-			// TODO
-			todo("eqExpr: JGtExpr");
-			JGtExpr gt = (JGtExpr) eqExpr;
 		} else {
 			System.err.print("eqExpr: " + eqExpr.toString());
 		}
+
+		ow.set(in.meetCopy(man, noCons));
+		ow_branchout.set(in.meetCopy(man, yesCons));
+
+		AWrapper state = new AWrapper(in);
+		System.out.println("Bin_Op1: " + getInterval(state, leftOp));
+		System.out.println("Bin_Op2: " + getInterval(state, rightOp));
+		System.out.println("Bin_Res: " + eqExpr.getClass() + ": " + yesCons);
 	}
 
 	@Override
