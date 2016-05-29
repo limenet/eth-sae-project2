@@ -175,8 +175,8 @@ public class Analysis extends ForwardBranchedFlowAnalysis<AWrapper> {
 	static void unhandled(String what) {
 		System.err.println("Can't handle " + what);
 	}
-	
-	static void todo (String what) {
+
+	static void todo(String what) {
 		System.err.println("// TODO: " + what);
 	}
 
@@ -217,33 +217,47 @@ public class Analysis extends ForwardBranchedFlowAnalysis<AWrapper> {
 				Texpr1Node leftNode = null;
 
 				if (leftOp instanceof IntConstant) {
-					leftNode = new Texpr1CstNode(new MpqScalar(((IntConstant) leftOp).value));
+					leftNode = new Texpr1CstNode(new MpqScalar(
+							((IntConstant) leftOp).value));
 				} else if (leftOp instanceof JimpleLocal) {
-					leftNode = new Texpr1VarNode(((JimpleLocal) leftOp).getName());
+					leftNode = new Texpr1VarNode(
+							((JimpleLocal) leftOp).getName());
 				} else {
-					System.err.println("handleIf: binopExpr unexpected leftOp operand type: " + leftOp.getType()
-							+ " class: " + leftOp.getClass());
+					System.err
+							.println("handleIf: binopExpr unexpected leftOp operand type: "
+									+ leftOp.getType()
+									+ " class: "
+									+ leftOp.getClass());
 				}
 
 				Texpr1Node rightNode = null;
 
 				if (rightOp instanceof IntConstant) {
-					rightNode = new Texpr1CstNode(new MpqScalar(((IntConstant) rightOp).value));
+					rightNode = new Texpr1CstNode(new MpqScalar(
+							((IntConstant) rightOp).value));
 				} else if (rightOp instanceof JimpleLocal) {
-					rightNode = new Texpr1VarNode(((JimpleLocal) rightOp).getName());
+					rightNode = new Texpr1VarNode(
+							((JimpleLocal) rightOp).getName());
 				} else {
-					System.err.println("handleDef: binopExpr unexpected rightOp operand type: " + rightOp.getType()
-							+ " class: " + rightOp.getClass());
+					System.err
+							.println("handleDef: binopExpr unexpected rightOp operand type: "
+									+ rightOp.getType()
+									+ " class: "
+									+ rightOp.getClass());
 				}
 
 				if (binopExpr instanceof JMulExpr) {
-					rAr = new Texpr1BinNode(Texpr1BinNode.OP_MUL, leftNode, rightNode);
+					rAr = new Texpr1BinNode(Texpr1BinNode.OP_MUL, leftNode,
+							rightNode);
 				} else if (binopExpr instanceof JSubExpr) {
-					rAr = new Texpr1BinNode(Texpr1BinNode.OP_SUB, leftNode, rightNode);
+					rAr = new Texpr1BinNode(Texpr1BinNode.OP_SUB, leftNode,
+							rightNode);
 				} else if (binopExpr instanceof JAddExpr) {
-					rAr = new Texpr1BinNode(Texpr1BinNode.OP_ADD, leftNode, rightNode);
+					rAr = new Texpr1BinNode(Texpr1BinNode.OP_ADD, leftNode,
+							rightNode);
 				} else if (binopExpr instanceof JDivExpr) {
-					rAr = new Texpr1BinNode(Texpr1BinNode.OP_DIV, leftNode, rightNode);
+					rAr = new Texpr1BinNode(Texpr1BinNode.OP_DIV, leftNode,
+							rightNode);
 				}
 
 				xp = new Texpr1Intern(env, rAr);
@@ -252,10 +266,12 @@ public class Analysis extends ForwardBranchedFlowAnalysis<AWrapper> {
 				AWrapper state = new AWrapper(o);
 				System.out.println("Bin_Op1: " + getInterval(state, leftOp));
 				System.out.println("Bin_Op2: " + getInterval(state, rightOp));
-				System.out.println("Bin_Res: " + getInterval(state, left) + binopExpr.getClass());
+				System.out.println("Bin_Res: " + getInterval(state, left)
+						+ binopExpr.getClass());
 			}
 			// TODO: Handle other kinds of assignments (e.g. x = y * z)
-			// @andrinadenzler 2016-05-27 14:46 implemented except for some potential corner cases
+			// @andrinadenzler 2016-05-27 14:46 implemented except for some
+			// potential corner cases
 			else {
 				todo("handleDef: forget: " + right.getClass());
 				if (o.getEnvironment().hasVar(varName)) {
@@ -274,24 +290,28 @@ public class Analysis extends ForwardBranchedFlowAnalysis<AWrapper> {
 		Texpr1Node leftNode = null;
 
 		if (leftOp instanceof IntConstant) {
-			leftNode = new Texpr1CstNode(new MpqScalar(((IntConstant) leftOp).value));
+			leftNode = new Texpr1CstNode(new MpqScalar(
+					((IntConstant) leftOp).value));
 		} else if (leftOp instanceof JimpleLocal) {
 			if (leftOp.getType().toString().equals(Analysis.resourceArrayName)) {
 				ow.set(new Abstract1(man, in));
 				ow_branchout.set(new Abstract1(man, in));
-				todo("handleIf: PrinterArray in eqExpr"); // TODO: @andrinadenzler: consider this case in other parts as well?
+				// TODO: consider this case in other parts as well?
+				todo("handleIf: PrinterArray in eqExpr");
 				return;
 			}
 			leftNode = new Texpr1VarNode(((JimpleLocal) leftOp).getName());
 		} else {
-			System.err.println("handleIf: eqExpr unexpected leftOp operand type: " + leftOp.getType()
-					+ " class: " + leftOp.getClass());
+			System.err
+					.println("handleIf: eqExpr unexpected leftOp operand type: "
+							+ leftOp.getType() + " class: " + leftOp.getClass());
 		}
 
 		Texpr1Node rightNode = null;
 
 		if (rightOp instanceof IntConstant) {
-			rightNode = new Texpr1CstNode(new MpqScalar(((IntConstant) rightOp).value));
+			rightNode = new Texpr1CstNode(new MpqScalar(
+					((IntConstant) rightOp).value));
 		} else if (rightOp instanceof JimpleLocal) {
 			if (rightOp.getType().toString().equals(Analysis.resourceArrayName)) {
 				todo("handleIf: PrinterArray in eqExpr");
@@ -299,21 +319,27 @@ public class Analysis extends ForwardBranchedFlowAnalysis<AWrapper> {
 			}
 			rightNode = new Texpr1VarNode(((JimpleLocal) rightOp).getName());
 		} else {
-			System.err.println("handleDef: binopExpr unexpected rightOp operand type: " + rightOp.getType()
-					+ " class: " + rightOp.getClass());
+			System.err
+					.println("handleDef: binopExpr unexpected rightOp operand type: "
+							+ rightOp.getType()
+							+ " class: "
+							+ rightOp.getClass());
 		}
 
-		Texpr1Node lmrExpr = new Texpr1BinNode(Texpr1BinNode.OP_SUB, leftNode, rightNode);
-		Texpr1Node rmlExpr = new Texpr1BinNode(Texpr1BinNode.OP_SUB, rightNode, leftNode);
+		Texpr1Node lmrExpr = new Texpr1BinNode(Texpr1BinNode.OP_SUB, leftNode,
+				rightNode);
+		Texpr1Node rmlExpr = new Texpr1BinNode(Texpr1BinNode.OP_SUB, rightNode,
+				leftNode);
 
-		// Constraints we add to the abstract element are of one of these two forms:
-		// - leftNode - rightNode (cmp_kind) 0, e.g., lmrExpr >= 0
-		// - rightNode - leftNode (cmp_kind) 0, e.g., rmlExpr == 0
+		// Constraints we add to the abstract element are of the following form:
+		// - leftNode - rightNode (cmp_kind) 0, e.g., lmrExpr >= 0
+		// - rightNode - leftNode (cmp_kind) 0, e.g., rmlExpr == 0
 		Tcons1 branchCons = null, fallCons = null;
 
 		// TODO: Handle required conditional expressions
-		// @andrinadenzler 2016-05-29 20:16 implemented except for imprecision in cases like (n != 0):
-		// (n != 0) is treated as (n in [-oo,+oo]) and provides no constraint on n at all
+		// @andrinadenzler 2016-05-29 20:16 implemented except for imprecision
+		// in cases like (n != 0): (n != 0) is treated as (n in [-oo,+oo])
+		// and provides no constraint on n at all
 		if (eqExpr instanceof JEqExpr) {
 			branchCons = new Tcons1(env, Tcons1.EQ, lmrExpr);
 			fallCons = new Tcons1(env, Tcons1.DISEQ, lmrExpr);
