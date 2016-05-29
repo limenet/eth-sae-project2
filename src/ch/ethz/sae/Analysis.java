@@ -305,43 +305,43 @@ public class Analysis extends ForwardBranchedFlowAnalysis<AWrapper> {
 
 		Texpr1Node lmrExpr = new Texpr1BinNode(Texpr1BinNode.OP_SUB, leftNode, rightNode);
 		Texpr1Node rmlExpr = new Texpr1BinNode(Texpr1BinNode.OP_SUB, rightNode, leftNode);
-		Tcons1 yesCons = null, noCons = null;
+		Tcons1 branchCons = null, fallCons = null;
 
 		// TODO: Handle required conditional expressions
 		// @andrinadenzler 2016-05-29 20:16 implemented except for imprecision in cases like (n != 0)
 		if (eqExpr instanceof JEqExpr) {
-			yesCons = new Tcons1(env, Tcons1.EQ, lmrExpr);
-			noCons = new Tcons1(env, Tcons1.DISEQ, lmrExpr);
+			branchCons = new Tcons1(env, Tcons1.EQ, lmrExpr);
+			fallCons = new Tcons1(env, Tcons1.DISEQ, lmrExpr);
 			// TODO
 			todo("eqExpr: JEqExpr");
 		} else if (eqExpr instanceof JNeExpr) {
-			yesCons = new Tcons1(env, Tcons1.DISEQ, lmrExpr);
-			noCons = new Tcons1(env, Tcons1.EQ, lmrExpr);
+			branchCons = new Tcons1(env, Tcons1.DISEQ, lmrExpr);
+			fallCons = new Tcons1(env, Tcons1.EQ, lmrExpr);
 			// TODO
 			todo("eqExpr: JNeExpr");
 		} else if (eqExpr instanceof JGeExpr) {
-			yesCons = new Tcons1(env, Tcons1.SUPEQ, lmrExpr);
-			noCons = new Tcons1(env, Tcons1.SUP, rmlExpr);
+			branchCons = new Tcons1(env, Tcons1.SUPEQ, lmrExpr);
+			fallCons = new Tcons1(env, Tcons1.SUP, rmlExpr);
 		} else if (eqExpr instanceof JGtExpr) {
-			yesCons = new Tcons1(env, Tcons1.SUP, lmrExpr);
-			noCons = new Tcons1(env, Tcons1.SUPEQ, rmlExpr);
+			branchCons = new Tcons1(env, Tcons1.SUP, lmrExpr);
+			fallCons = new Tcons1(env, Tcons1.SUPEQ, rmlExpr);
 		} else if (eqExpr instanceof JLeExpr) {
-			yesCons = new Tcons1(env, Tcons1.SUPEQ, rmlExpr);
-			noCons = new Tcons1(env, Tcons1.SUP, lmrExpr);
+			branchCons = new Tcons1(env, Tcons1.SUPEQ, rmlExpr);
+			fallCons = new Tcons1(env, Tcons1.SUP, lmrExpr);
 		} else if (eqExpr instanceof JLtExpr) {
-			yesCons = new Tcons1(env, Tcons1.SUP, rmlExpr);
-			noCons = new Tcons1(env, Tcons1.SUPEQ, lmrExpr);
+			branchCons = new Tcons1(env, Tcons1.SUP, rmlExpr);
+			fallCons = new Tcons1(env, Tcons1.SUPEQ, lmrExpr);
 		} else {
 			System.err.print("eqExpr: " + eqExpr.toString());
 		}
 
-		ow.set(in.meetCopy(man, noCons));
-		ow_branchout.set(in.meetCopy(man, yesCons));
+		ow.set(in.meetCopy(man, fallCons));
+		ow_branchout.set(in.meetCopy(man, branchCons));
 
 		AWrapper state = new AWrapper(in);
 		System.out.println("Bin_Op1: " + getInterval(state, leftOp));
 		System.out.println("Bin_Op2: " + getInterval(state, rightOp));
-		System.out.println("Bin_Res: " + eqExpr.getClass() + ": " + yesCons);
+		System.out.println("Bin_Res: " + eqExpr.getClass() + ": " + branchCons);
 	}
 
 	@Override
