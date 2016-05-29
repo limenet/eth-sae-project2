@@ -72,8 +72,8 @@ public class Verifier {
 			System.out.println(analyzedClass + " MAY_OUT_OF_BOUNDS");
 		}
 	}
-	
-	static void todo (String what) {
+
+	static void todo(String what) {
 		System.err.println("// TODO: " + what);
 	}
 
@@ -112,14 +112,16 @@ public class Verifier {
 						// check if divisor is a local variable
 						// check if local may be 0
 						JimpleLocal divisor = (JimpleLocal) rightOp;
-						int cmp = state.get().getBound(state.man, divisor.toString()).cmp(new MpqScalar(0));
+						int cmp = state.get()
+								.getBound(state.man, divisor.toString())
+								.cmp(new MpqScalar(0));
 						if (cmp == 0 || cmp == 1) {
 							return false;
 						}
 
 					} else {
 						// TODO handle the case where divisor is not a constant
-						todo("divisor is not a constant "+ rightOp.getClass());
+						todo("divisor is not a constant " + rightOp.getClass());
 						return false;
 					}
 				}
@@ -160,7 +162,8 @@ public class Verifier {
 					// the variable varNameRight is being renamed to varNameLeft
 					initializedPAs.put(varNameLeft,
 							declaredPAs.get(varNameRight));
-				} else if (varNameRight.equals("new " + Analysis.resourceArrayName)) {
+				} else if (varNameRight.equals("new "
+						+ Analysis.resourceArrayName)) {
 				} else if (initializedPAs.containsKey(varNameRight)) {
 					// there is a reference to another, already initialized
 					// PrinterArray
