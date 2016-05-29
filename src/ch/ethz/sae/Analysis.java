@@ -308,42 +308,29 @@ public class Analysis extends ForwardBranchedFlowAnalysis<AWrapper> {
 		Tcons1 yesCons = null, noCons = null;
 
 		// TODO: Handle required conditional expressions
+		// @andrinadenzler 2016-05-29 20:16 implemented except for imprecision in cases like (n != 0)
 		if (eqExpr instanceof JEqExpr) {
 			yesCons = new Tcons1(env, Tcons1.EQ, lmrExpr);
 			noCons = new Tcons1(env, Tcons1.DISEQ, lmrExpr);
 			// TODO
 			todo("eqExpr: JEqExpr");
-			JEqExpr eq = (JEqExpr) eqExpr;
 		} else if (eqExpr instanceof JNeExpr) {
 			yesCons = new Tcons1(env, Tcons1.DISEQ, lmrExpr);
 			noCons = new Tcons1(env, Tcons1.EQ, lmrExpr);
 			// TODO
 			todo("eqExpr: JNeExpr");
-			JNeExpr ne = (JNeExpr) eqExpr;
 		} else if (eqExpr instanceof JGeExpr) {
 			yesCons = new Tcons1(env, Tcons1.SUPEQ, lmrExpr);
 			noCons = new Tcons1(env, Tcons1.SUP, rmlExpr);
-			// TODO
-			todo("eqExpr: JGeExpr");
-			JGeExpr ge = (JGeExpr) eqExpr;
 		} else if (eqExpr instanceof JGtExpr) {
 			yesCons = new Tcons1(env, Tcons1.SUP, lmrExpr);
 			noCons = new Tcons1(env, Tcons1.SUPEQ, rmlExpr);
-			// TODO
-			todo("eqExpr: JGtExpr");
-			JGtExpr gt = (JGtExpr) eqExpr;
 		} else if (eqExpr instanceof JLeExpr) {
 			yesCons = new Tcons1(env, Tcons1.SUPEQ, rmlExpr);
 			noCons = new Tcons1(env, Tcons1.SUP, lmrExpr);
-			// TODO
-			todo("eqExpr: JLeExpr");
-			JLeExpr le = (JLeExpr) eqExpr;
 		} else if (eqExpr instanceof JLtExpr) {
 			yesCons = new Tcons1(env, Tcons1.SUP, rmlExpr);
 			noCons = new Tcons1(env, Tcons1.SUPEQ, lmrExpr);
-			// TODO
-			todo("eqExpr: JLtExpr");
-			JLtExpr lt = (JLtExpr) eqExpr;
 		} else {
 			System.err.print("eqExpr: " + eqExpr.toString());
 		}
