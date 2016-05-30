@@ -97,13 +97,22 @@ public class TestCases {
 	}
 
 	@Test
-	public void testDivByZero() {
-		assertEquals(expected.split("\\|")[0], output[0]);
+	public void testDivByZero() throws Exception {
+
+		if (!output[0].contains("DIV_ZERO")) {
+			throw new Exception("segfault");
+		} else {
+			assertEquals(expected.split("\\|")[0], output[0]);
+		}
 	}
 
 	@Test
-	public void testOutOfBounds() {
-		assertEquals(expected.split("\\|")[1], output[1]);
+	public void testOutOfBounds() throws Exception {
+		if (!output[1].contains("DIV_ZERO")) {
+			throw new Exception("segfault");
+		} else {
+			assertEquals(expected.split("\\|")[1], output[1]);
+		}
 	}
 
 	@Test
