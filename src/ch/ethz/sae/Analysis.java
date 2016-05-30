@@ -177,15 +177,6 @@ public class Analysis extends ForwardBranchedFlowAnalysis<AWrapper> {
 	}
 
 	static void unhandled(String what) {
-		if (!Verifier.suppressErrors) {
-			System.err.println("Can't handle " + what);
-		}
-	}
-
-	static void todo(String what) {
-		if (!Verifier.suppressErrors) {
-			System.err.println("// TODO: " + what);
-		}
 		Verifier.unhandled(what);
 	}
 
