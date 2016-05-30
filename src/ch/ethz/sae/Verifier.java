@@ -80,7 +80,6 @@ public class Verifier {
 		}
 	}
 
-
 	static void debug(String what) {
 		if (!suppressErrors) {
 			System.out.println("Debug: " + what);
@@ -232,55 +231,12 @@ public class Verifier {
 					// TODO: Check whether the 'sendJob' method's argument is
 					// within bounds
 
-					Value argValue = jInvStmt.getInvokeExpr().getArg(0);
-
-					String localName = ((JimpleLocalBox) jInvStmt
-							.getInvokeExpr().getUseBoxes().get(0)).getValue()
-							.toString();
-
-					// @limenet 2016-05-23 17:38
-					// The following if-statements are a very basic
-					// form of bounds-checking. No pointer analysis etc. is
-					// implemented here.
-
-					if (!initializedPAs.containsKey(localName)) {
-						unhandled("Unknown PrinterArray");
-						return false;
-					}
-
-					if (initializedPAs.get(localName) == null) {
-						unhandled("Invalid PrinterArray object (n=null)");
-						return false;
-					}
-
-					if (argValue instanceof IntConstant) {
-						int argInt = ((IntConstant) argValue).value;
-
-						// localName is called with argInt and was initialized
-						// with initializedPAs.get(localName)
-
-						if (argInt >= initializedPAs.get(localName)) {
-							return false;
-						}
-					} else if (argValue instanceof JimpleLocal) {
-						JimpleLocal arg = ((JimpleLocal) argValue);
-						if (state
-								.get()
-								.getBound(state.man, arg.toString())
-								.cmp(new Interval(0, initializedPAs
-										.get(localName) - 1)) == 1) {
-							return false;
-						}
-					}
-
 					// Visit all allocation sites that the base pointer may
 					// reference
 					MyP2SetVisitor visitor = new MyP2SetVisitor();
 					pts.forall(visitor);
 				}
-
 			}
-
 		}
 
 		// Return false if the method may have index out of bound errors
