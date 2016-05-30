@@ -36,7 +36,7 @@ public class TestCases {
 	@Before
 	public void setUp() throws Exception {
 		String className = inputClass.split("-")[0];
-		String run = cwd() + "/run.sh " + className;
+		String run = cwd() + "/run.sh " + className + " no";
 		long startTime = System.nanoTime();
 		String actualOutputOfTest = execCmd(run);
 		long endTime = System.nanoTime();
