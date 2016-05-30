@@ -108,7 +108,7 @@ public class TestCases {
 
 	@Test
 	public void testOutOfBounds() throws Exception {
-		if (!output[1].contains("DIV_ZERO")) {
+		if (!output[1].contains("OUT_OF_BOUNDS")) {
 			throw new Exception("segfault");
 		} else {
 			assertEquals(expected.split("\\|")[1], output[1]);
