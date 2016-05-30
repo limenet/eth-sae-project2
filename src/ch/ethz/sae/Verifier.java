@@ -80,6 +80,13 @@ public class Verifier {
 		}
 	}
 
+
+	static void debug(String what) {
+		if (!suppressErrors) {
+			System.out.println("Debug: " + what);
+		}
+	}
+
 	static void unhandled(String what) {
 		if (!suppressErrors) {
 			System.err.println("Can't handle " + what);

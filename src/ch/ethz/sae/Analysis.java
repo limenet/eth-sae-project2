@@ -172,6 +172,10 @@ public class Analysis extends ForwardBranchedFlowAnalysis<AWrapper> {
 		doAnalysis();
 	}
 
+	static void debug(String what) {
+		Verifier.debug(what);
+	}
+
 	static void unhandled(String what) {
 		if (!Verifier.suppressErrors) {
 			System.err.println("Can't handle " + what);
@@ -182,6 +186,11 @@ public class Analysis extends ForwardBranchedFlowAnalysis<AWrapper> {
 		if (!Verifier.suppressErrors) {
 			System.err.println("// TODO: " + what);
 		}
+		Verifier.unhandled(what);
+	}
+
+	static void todo(String what) {
+		Verifier.todo(what);
 	}
 
 	private void handleDef(Abstract1 o, Value left, Value right)
@@ -270,9 +279,9 @@ public class Analysis extends ForwardBranchedFlowAnalysis<AWrapper> {
 				}
 
 				AWrapper state = new AWrapper(o);
-				System.out.println("Bin_Op1: " + getInterval(state, leftOp));
-				System.out.println("Bin_Op2: " + getInterval(state, rightOp));
-				System.out.println("Bin_Res: " + getInterval(state, left)
+				debug("Bin_Op1: " + getInterval(state, leftOp));
+				debug("Bin_Op2: " + getInterval(state, rightOp));
+				debug("Bin_Res: " + getInterval(state, left)
 						+ binopExpr.getClass());
 			}
 			// TODO: Handle other kinds of assignments (e.g. x = y * z)
@@ -372,9 +381,9 @@ public class Analysis extends ForwardBranchedFlowAnalysis<AWrapper> {
 		ow_branchout.set(in.meetCopy(man, branchCons));
 
 		AWrapper state = new AWrapper(in);
-		System.out.println("Bin_Op1: " + getInterval(state, leftOp));
-		System.out.println("Bin_Op2: " + getInterval(state, rightOp));
-		System.out.println("Bin_Res: " + eqExpr.getClass() + ": " + branchCons);
+		debug("Bin_Op1: " + getInterval(state, leftOp));
+		debug("Bin_Op2: " + getInterval(state, rightOp));
+		debug("Bin_Res: " + eqExpr.getClass() + ": " + branchCons);
 	}
 
 	@Override
