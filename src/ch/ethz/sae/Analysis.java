@@ -261,7 +261,13 @@ public class Analysis extends ForwardBranchedFlowAnalysis<AWrapper> {
 				}
 
 				xp = new Texpr1Intern(env, rAr);
-				o.assign(man, varName, xp, null);
+				if (binopExpr instanceof JDivExpr
+						&& rightOp instanceof IntConstant
+						&& ((IntConstant) rightOp).value == 0) {
+					o = new Abstract1(man, env, true);
+				} else {
+					o.assign(man, varName, xp, null);
+				}
 
 				AWrapper state = new AWrapper(o);
 				System.out.println("Bin_Op1: " + getInterval(state, leftOp));
