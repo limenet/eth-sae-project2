@@ -1,6 +1,8 @@
-// DIV_OUTPUT = NO_DIV_ZERO
+// DIV_OUTPUT = MAY_DIV_ZERO
 // BOUNDS_OUTPUT = NO_OUT_OF_BOUNDS
 
+// MAY_DIV_BY_ZERO is due to non ==/!= 0 constraint
+// in if/else branch
 // if-clause
 
 public class Test5 {
