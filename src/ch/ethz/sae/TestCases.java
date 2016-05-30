@@ -100,7 +100,7 @@ public class TestCases {
 	public void testDivByZero() throws Exception {
 
 		if (!output[0].contains("DIV_ZERO")) {
-			throw new Exception("segfault");
+			throw new Exception("Java exception or segmentation fault");
 		} else {
 			assertEquals(expected.split("\\|")[0], output[0]);
 		}
