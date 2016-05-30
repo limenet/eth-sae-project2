@@ -36,7 +36,7 @@ public class TestCases {
 	@Before
 	public void setUp() throws Exception {
 		String className = inputClass.split("-")[0];
-		String run = cwd() + "/run.sh " + className;
+		String run = cwd() + "/run.sh " + className + " no";
 		long startTime = System.nanoTime();
 		String actualOutputOfTest = execCmd(run);
 		long endTime = System.nanoTime();
@@ -97,13 +97,22 @@ public class TestCases {
 	}
 
 	@Test
-	public void testDivByZero() {
-		assertEquals(expected.split("\\|")[0], output[0]);
+	public void testDivByZero() throws Exception {
+
+		if (!output[0].contains("DIV_ZERO")) {
+			throw new Exception("segfault");
+		} else {
+			assertEquals(expected.split("\\|")[0], output[0]);
+		}
 	}
 
 	@Test
-	public void testOutOfBounds() {
-		assertEquals(expected.split("\\|")[1], output[1]);
+	public void testOutOfBounds() throws Exception {
+		if (!output[1].contains("OUT_OF_BOUNDS")) {
+			throw new Exception("Java exception or segmentation fault");
+		} else {
+			assertEquals(expected.split("\\|")[1], output[1]);
+		}
 	}
 
 	@Test

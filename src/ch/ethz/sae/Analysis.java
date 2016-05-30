@@ -173,11 +173,15 @@ public class Analysis extends ForwardBranchedFlowAnalysis<AWrapper> {
 	}
 
 	static void unhandled(String what) {
-		System.err.println("Can't handle " + what);
+		if (!Verifier.suppressErrors) {
+			System.err.println("Can't handle " + what);
+		}
 	}
 
 	static void todo(String what) {
-		System.err.println("// TODO: " + what);
+		if (!Verifier.suppressErrors) {
+			System.err.println("// TODO: " + what);
+		}
 	}
 
 	private void handleDef(Abstract1 o, Value left, Value right)
@@ -202,11 +206,11 @@ public class Analysis extends ForwardBranchedFlowAnalysis<AWrapper> {
 					xp = new Texpr1Intern(env, rAr);
 					o.assign(man, varName, xp, null);
 				} else {
-					// TODO
+					//  TODO
 					todo("handelDef: JimpleLocal of type: " + local.getType());
 				}
 			} else if (right instanceof ParameterRef) {
-				// TODO
+				//  TODO
 				todo("handleDef: ParamerRef");
 			} else if (right instanceof AbstractBinopExpr) {
 				AbstractBinopExpr binopExpr = (AbstractBinopExpr) right;
@@ -223,11 +227,8 @@ public class Analysis extends ForwardBranchedFlowAnalysis<AWrapper> {
 					leftNode = new Texpr1VarNode(
 							((JimpleLocal) leftOp).getName());
 				} else {
-					System.err
-							.println("handleIf: binopExpr unexpected leftOp operand type: "
-									+ leftOp.getType()
-									+ " class: "
-									+ leftOp.getClass());
+					unhandled("handleIf: binopExpr unexpected leftOp operand type: "
+							+ leftOp.getType() + " class: " + leftOp.getClass());
 				}
 
 				Texpr1Node rightNode = null;
@@ -239,11 +240,10 @@ public class Analysis extends ForwardBranchedFlowAnalysis<AWrapper> {
 					rightNode = new Texpr1VarNode(
 							((JimpleLocal) rightOp).getName());
 				} else {
-					System.err
-							.println("handleDef: binopExpr unexpected rightOp operand type: "
-									+ rightOp.getType()
-									+ " class: "
-									+ rightOp.getClass());
+					unhandled("handleDef: binopExpr unexpected rightOp operand type: "
+							+ rightOp.getType()
+							+ " class: "
+							+ rightOp.getClass());
 				}
 
 				if (binopExpr instanceof JMulExpr) {
@@ -261,7 +261,13 @@ public class Analysis extends ForwardBranchedFlowAnalysis<AWrapper> {
 				}
 
 				xp = new Texpr1Intern(env, rAr);
-				o.assign(man, varName, xp, null);
+				if (binopExpr instanceof JDivExpr
+						&& rightOp instanceof IntConstant
+						&& ((IntConstant) rightOp).value == 0) {
+					o = new Abstract1(man, env, true);
+				} else {
+					o.assign(man, varName, xp, null);
+				}
 
 				AWrapper state = new AWrapper(o);
 				System.out.println("Bin_Op1: " + getInterval(state, leftOp));
@@ -302,9 +308,8 @@ public class Analysis extends ForwardBranchedFlowAnalysis<AWrapper> {
 			}
 			leftNode = new Texpr1VarNode(((JimpleLocal) leftOp).getName());
 		} else {
-			System.err
-					.println("handleIf: eqExpr unexpected leftOp operand type: "
-							+ leftOp.getType() + " class: " + leftOp.getClass());
+			unhandled("handleIf: eqExpr unexpected leftOp operand type: "
+					+ leftOp.getType() + " class: " + leftOp.getClass());
 		}
 
 		Texpr1Node rightNode = null;
@@ -319,11 +324,8 @@ public class Analysis extends ForwardBranchedFlowAnalysis<AWrapper> {
 			}
 			rightNode = new Texpr1VarNode(((JimpleLocal) rightOp).getName());
 		} else {
-			System.err
-					.println("handleDef: binopExpr unexpected rightOp operand type: "
-							+ rightOp.getType()
-							+ " class: "
-							+ rightOp.getClass());
+			unhandled("handleDef: binopExpr unexpected rightOp operand type: "
+					+ rightOp.getType() + " class: " + rightOp.getClass());
 		}
 
 		Texpr1Node lmrExpr = new Texpr1BinNode(Texpr1BinNode.OP_SUB, leftNode,
@@ -339,7 +341,7 @@ public class Analysis extends ForwardBranchedFlowAnalysis<AWrapper> {
 		// TODO: Handle required conditional expressions
 		// @andrinadenzler 2016-05-29 20:16 implemented except for imprecision
 		// in cases like (n != 0): (n != 0) is treated as (n in [-oo,+oo])
-		// and provides no constraint on n at all
+		//  and provides no constraint on n at all
 		if (eqExpr instanceof JEqExpr) {
 			branchCons = new Tcons1(env, Tcons1.EQ, lmrExpr);
 			fallCons = new Tcons1(env, Tcons1.DISEQ, lmrExpr);
@@ -363,7 +365,7 @@ public class Analysis extends ForwardBranchedFlowAnalysis<AWrapper> {
 			branchCons = new Tcons1(env, Tcons1.SUP, rmlExpr);
 			fallCons = new Tcons1(env, Tcons1.SUPEQ, lmrExpr);
 		} else {
-			System.err.print("eqExpr: " + eqExpr.toString());
+			unhandled("eqExpr: " + eqExpr.toString());
 		}
 
 		ow.set(in.meetCopy(man, fallCons));

@@ -30,13 +30,20 @@ import soot.toolkits.graph.BriefUnitGraph;
 
 public class Verifier {
 
+	public static Boolean suppressErrors = false;
+
 	public static void main(String[] args) throws ApronException {
-		if (args.length != 1) {
+		if (args.length < 1) {
 			System.err
-					.println("Usage: java -classpath soot-2.5.0.jar:./bin ch.ethz.sae.Verifier <class to test>");
+					.println("Usage: java -classpath soot-2.5.0.jar:./bin ch.ethz.sae.Verifier <class to test> <show errors>");
 			System.exit(-1);
 		}
 		String analyzedClass = args[0];
+		if (args.length == 2) {
+			if (args[1].equals("no")) {
+				suppressErrors = true;
+			}
+		}
 		SootClass c = loadClass(analyzedClass);
 
 		System.out.println(analyzedClass + "\n\n");
@@ -73,8 +80,16 @@ public class Verifier {
 		}
 	}
 
+	static void unhandled(String what) {
+		if (!suppressErrors) {
+			System.err.println("Can't handle " + what);
+		}
+	}
+
 	static void todo(String what) {
-		System.err.println("// TODO: " + what);
+		if (!suppressErrors) {
+			System.err.println("// TODO: " + what);
+		}
 	}
 
 	private static boolean verifyDivisionByZero(SootMethod method,
@@ -222,13 +237,12 @@ public class Verifier {
 					// implemented here.
 
 					if (!initializedPAs.containsKey(localName)) {
-						System.err.println("Unknown PrinterArray");
+						unhandled("Unknown PrinterArray");
 						return false;
 					}
 
 					if (initializedPAs.get(localName) == null) {
-						System.err
-								.println("Invalid PrinterArray object (n=null)");
+						unhandled("Invalid PrinterArray object (n=null)");
 						return false;
 					}
 
