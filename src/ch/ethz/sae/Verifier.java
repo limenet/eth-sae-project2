@@ -281,5 +281,52 @@ class MyP2SetVisitor extends P2SetVisitor {
 	@Override
 	public void visit(Node arg0) {
 		// TODO: Check whether the argument given to sendJob is within bounds
+		AllocNode allocNode = (AllocNode) arg0;
+		PAG pag = allocNode.getPag();
+
+		this.returnValue = true;
+
+		Set<Entry<InvokeExpr, SootMethod>> entrySet = allocNode.getPag().callToMethod
+				.entrySet();
+		debug(entrySet);
+		Iterator<Entry<InvokeExpr, SootMethod>> it = entrySet.iterator();
+
+		int argumentToSendJob = 0;
+		int constructorArgument = -1;
+
+		while (it.hasNext()) {
+			Entry<InvokeExpr, SootMethod> el = it.next();
+			InvokeExpr key = el.getKey();
+
+			if (key instanceof JSpecialInvokeExpr) {
+				Verifier.todo("Get constructor argument and store it in constructorArgument");
+			}
+
+			if (key instanceof JVirtualInvokeExpr) {
+
+				if (key.getMethod().getName().equals(Analysis.functionName)) {
+
+					Value argValue = key.getArg(0);
+
+					if (argValue instanceof IntConstant) {
+						argumentToSendJob = ((IntConstant) argValue).value;
+					} else if (argValue instanceof JimpleLocal) {
+						JimpleLocal local = (JimpleLocal) argValue;
+
+						Verifier.todo("Unhandled JimpleLocal in visitor");
+					}
+				}
+			}
+
+		}
+
+		if (argumentToSendJob > constructorArgument - 1) {
+			this.returnValue = false;
+			return;
+		}
+	}
+
+	static void debug(Object what) {
+		Verifier.debug(what);
 	}
 }
