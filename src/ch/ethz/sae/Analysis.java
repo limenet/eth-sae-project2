@@ -172,7 +172,7 @@ public class Analysis extends ForwardBranchedFlowAnalysis<AWrapper> {
 		doAnalysis();
 	}
 
-	static void debug(String what) {
+	static void debug(Object what) {
 		Verifier.debug(what);
 	}
 
