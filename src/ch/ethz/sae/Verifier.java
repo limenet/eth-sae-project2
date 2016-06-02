@@ -15,6 +15,7 @@ import soot.jimple.InvokeExpr;
 import soot.jimple.internal.JAssignStmt;
 import soot.jimple.internal.JDivExpr;
 import soot.jimple.internal.JInvokeStmt;
+import soot.jimple.internal.JNewExpr;
 import soot.jimple.internal.JSpecialInvokeExpr;
 import soot.jimple.internal.JVirtualInvokeExpr;
 import soot.jimple.internal.JimpleLocal;
@@ -25,6 +26,7 @@ import soot.jimple.spark.SparkTransformer;
 import soot.jimple.spark.pag.AllocNode;
 import soot.jimple.spark.pag.Node;
 import soot.jimple.spark.pag.PAG;
+import soot.jimple.spark.pag.VarNode;
 import soot.Local;
 import soot.Scene;
 import soot.SootClass;
@@ -162,8 +164,8 @@ public class Verifier {
 
 		// TODO: Create a list of all allocation sites for PrinterArray
 
-		Map<String, Integer> declaredPAs = new HashMap<String, Integer>();
-		Map<String, Integer> initializedPAs = new HashMap<String, Integer>();
+		Map<JimpleLocal, Integer> declaredPAs = new HashMap<JimpleLocal, Integer>();
+		Map<JimpleLocal, Integer> initializedPAs = new HashMap<JimpleLocal, Integer>();
 
 		for (Unit u : method.retrieveActiveBody().getUnits()) {
 			AWrapper state = fixPoint.getFlowBefore(u);
@@ -180,21 +182,22 @@ public class Verifier {
 			if (u instanceof JAssignStmt) {
 				JAssignStmt assignStmt = (JAssignStmt) u;
 
-				String varNameLeft = assignStmt.getLeftOp().toString();
-				String varNameRight = assignStmt.getRightOp().toString();
+				if (!(assignStmt.getRightOp() instanceof JNewExpr)
+						&& (assignStmt.getRightOp() instanceof JimpleLocal)) {
+					JimpleLocal left = (JimpleLocal) assignStmt.getLeftOp();
 
-				if (declaredPAs.containsKey(varNameRight)) {
-					// the variable varNameRight is being renamed to varNameLeft
-					initializedPAs.put(varNameLeft,
-							declaredPAs.get(varNameRight));
-				} else if (varNameRight.equals("new "
-						+ Analysis.resourceArrayName)) {
-				} else if (initializedPAs.containsKey(varNameRight)) {
-					// there is a reference to another, already initialized
-					// PrinterArray
-					// look up that value (non-recursively!)
-					initializedPAs.put(varNameLeft,
-							initializedPAs.get(varNameRight));
+					JimpleLocal right = (JimpleLocal) assignStmt.getRightOp();
+
+					if (declaredPAs.containsKey(right)) {
+						// the variable varNameRight is being renamed to
+						// varNameLeft
+						initializedPAs.put(left, declaredPAs.get(right));
+					} else if (initializedPAs.containsKey(right)) {
+						// there is a reference to another, already initialized
+						// PrinterArray
+						// look up that value (non-recursively!)
+						initializedPAs.put(left, initializedPAs.get(right));
+					}
 				}
 			}
 
@@ -207,13 +210,19 @@ public class Verifier {
 				// see the variable argInt
 				JInvokeStmt invokeStmt = (JInvokeStmt) u;
 				Value argValue = invokeStmt.getInvokeExpr().getArg(0);
-				int argInt = ((IntConstant) argValue).value;
-
-				String localName = ((JimpleLocalBox) invokeStmt.getInvokeExpr()
-						.getUseBoxes().get(0)).getValue().toString();
-				// localName is initialized with argInt
-
-				declaredPAs.put(localName, argInt);
+				if (argValue instanceof IntConstant) {
+					int argInt = ((IntConstant) argValue).value;
+					JimpleLocal baseLocal = (JimpleLocal) ((JSpecialInvokeExpr) invokeStmt
+							.getInvokeExpr()).getBase();
+					if (baseLocal instanceof JimpleLocal) {
+						// baseLocal is initialized with argInt
+						declaredPAs.put(baseLocal, argInt);
+					} else {
+						unhandled("SpecialInvokeExpr with non-local base.");
+					}
+				} else {
+					unhandled("SpecialInvokeExpr with non-constant arg.");
+				}
 
 			}
 
