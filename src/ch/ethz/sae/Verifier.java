@@ -80,9 +80,9 @@ public class Verifier {
 		}
 	}
 
-	static void debug(String what) {
+	static void debug(Object what) {
 		if (!suppressErrors) {
-			System.out.println("Debug: " + what);
+			System.out.println("Debug: " + what.toString());
 		}
 	}
 
