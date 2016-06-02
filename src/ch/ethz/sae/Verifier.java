@@ -1,14 +1,17 @@
 package ch.ethz.sae;
 
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
 
 import apron.ApronException;
-import apron.Interval;
 import apron.MpqScalar;
 import soot.Unit;
 import soot.jimple.DefinitionStmt;
 import soot.jimple.IntConstant;
+import soot.jimple.InvokeExpr;
 import soot.jimple.internal.JAssignStmt;
 import soot.jimple.internal.JDivExpr;
 import soot.jimple.internal.JInvokeStmt;
@@ -19,6 +22,7 @@ import soot.jimple.internal.JimpleLocalBox;
 import soot.jimple.spark.sets.DoublePointsToSet;
 import soot.jimple.spark.sets.P2SetVisitor;
 import soot.jimple.spark.SparkTransformer;
+import soot.jimple.spark.pag.AllocNode;
 import soot.jimple.spark.pag.Node;
 import soot.jimple.spark.pag.PAG;
 import soot.Local;
