@@ -234,11 +234,14 @@ public class Verifier {
 
 					// TODO: Check whether the 'sendJob' method's argument is
 					// within bounds
-
 					// Visit all allocation sites that the base pointer may
 					// reference
 					MyP2SetVisitor visitor = new MyP2SetVisitor();
 					pts.forall(visitor);
+
+					if (!visitor.getReturnValue()) {
+						return false;
+					}
 				}
 			}
 		}
