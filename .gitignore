@@ -2,3 +2,4 @@
 .project
 .externalToolBuilders/
 hs_err*
+src/TestSpec.java
