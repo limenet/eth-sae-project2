@@ -194,7 +194,8 @@ public class Verifier {
 						.getInvokeExpr();
 
 				Local base = (Local) invokeExpr.getBase();
-				DoublePointsToSet pts = (DoublePointsToSet) pointsTo.reachingObjects(base);
+				DoublePointsToSet pts = (DoublePointsToSet) pointsTo
+						.reachingObjects(base);
 
 				Value argValue = invokeExpr.getArg(0);
 
@@ -228,13 +229,15 @@ public class Verifier {
 					// within bounds
 
 					Value argValue = invokeExpr.getArg(0);
-					Interval argInterval = Analysis.getInterval(state, argValue);
+					Interval argInterval = Analysis
+							.getInterval(state, argValue);
 
 					debug("VirtualInvokeExpr with argument: " + argInterval);
 
 					// Visit all allocation sites that the base pointer may
 					// reference
-					MyP2SetVisitor visitor = new MyP2SetVisitor(allocationSites, argInterval);
+					MyP2SetVisitor visitor = new MyP2SetVisitor(
+							allocationSites, argInterval);
 					pts.forall(visitor);
 
 					if (!visitor.getReturnValue()) {
@@ -279,7 +282,8 @@ class MyP2SetVisitor extends P2SetVisitor {
 	Map<PointsToSet, Integer> allocationSites;
 	Interval argumentInterval;
 
-	public MyP2SetVisitor(Map<PointsToSet, Integer> allocationSites, Interval methodCallArg) {
+	public MyP2SetVisitor(Map<PointsToSet, Integer> allocationSites,
+			Interval methodCallArg) {
 		this.allocationSites = allocationSites;
 		this.argumentInterval = methodCallArg;
 	}
@@ -293,10 +297,11 @@ class MyP2SetVisitor extends P2SetVisitor {
 		this.returnValue = true;
 		int constructorArg;
 
-		for (Entry<PointsToSet, Integer> entry: allocationSites.entrySet()) {
+		for (Entry<PointsToSet, Integer> entry : allocationSites.entrySet()) {
 			if (((DoublePointsToSet) entry.getKey()).contains(allocNode)) {
 				constructorArg = entry.getValue();
-				Interval constructorInterval = new Interval(0, constructorArg - 1);
+				Interval constructorInterval = new Interval(0,
+						constructorArg - 1);
 
 				if (!argumentInterval.isLeq(constructorInterval)) {
 					this.returnValue = false;
