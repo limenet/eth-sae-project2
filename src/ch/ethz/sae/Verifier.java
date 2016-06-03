@@ -2,11 +2,14 @@ package ch.ethz.sae;
 
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
 import apron.ApronException;
+import apron.Interval;
 import apron.MpqScalar;
 import soot.Unit;
 import soot.jimple.DefinitionStmt;
@@ -19,15 +22,15 @@ import soot.jimple.internal.JNewExpr;
 import soot.jimple.internal.JSpecialInvokeExpr;
 import soot.jimple.internal.JVirtualInvokeExpr;
 import soot.jimple.internal.JimpleLocal;
-import soot.jimple.internal.JimpleLocalBox;
 import soot.jimple.spark.sets.DoublePointsToSet;
 import soot.jimple.spark.sets.P2SetVisitor;
+import soot.jimple.spark.sets.PointsToSetInternal;
 import soot.jimple.spark.SparkTransformer;
 import soot.jimple.spark.pag.AllocNode;
 import soot.jimple.spark.pag.Node;
 import soot.jimple.spark.pag.PAG;
-import soot.jimple.spark.pag.VarNode;
 import soot.Local;
+import soot.PointsToSet;
 import soot.Scene;
 import soot.SootClass;
 import soot.SootMethod;
@@ -164,8 +167,7 @@ public class Verifier {
 
 		// TODO: Create a list of all allocation sites for PrinterArray
 
-		Map<JimpleLocal, Integer> declaredPAs = new HashMap<JimpleLocal, Integer>();
-		Map<JimpleLocal, Integer> initializedPAs = new HashMap<JimpleLocal, Integer>();
+		Map<PointsToSet, Integer> allocationSites = new HashMap<PointsToSet, Integer>();
 
 		for (Unit u : method.retrieveActiveBody().getUnits()) {
 			AWrapper state = fixPoint.getFlowBefore(u);
@@ -179,28 +181,6 @@ public class Verifier {
 				e.printStackTrace();
 			}
 
-			if (u instanceof JAssignStmt) {
-				JAssignStmt assignStmt = (JAssignStmt) u;
-
-				if (!(assignStmt.getRightOp() instanceof JNewExpr)
-						&& (assignStmt.getRightOp() instanceof JimpleLocal)) {
-					JimpleLocal left = (JimpleLocal) assignStmt.getLeftOp();
-
-					JimpleLocal right = (JimpleLocal) assignStmt.getRightOp();
-
-					if (declaredPAs.containsKey(right)) {
-						// the variable varNameRight is being renamed to
-						// varNameLeft
-						initializedPAs.put(left, declaredPAs.get(right));
-					} else if (initializedPAs.containsKey(right)) {
-						// there is a reference to another, already initialized
-						// PrinterArray
-						// look up that value (non-recursively!)
-						initializedPAs.put(left, initializedPAs.get(right));
-					}
-				}
-			}
-
 			if (u instanceof JInvokeStmt
 					&& ((JInvokeStmt) u).getInvokeExpr() instanceof JSpecialInvokeExpr) {
 
@@ -209,17 +189,20 @@ public class Verifier {
 				// @limenet 2016-05-23 17:37 this is working
 				// see the variable argInt
 				JInvokeStmt invokeStmt = (JInvokeStmt) u;
-				Value argValue = invokeStmt.getInvokeExpr().getArg(0);
+
+				JSpecialInvokeExpr invokeExpr = (JSpecialInvokeExpr) invokeStmt
+						.getInvokeExpr();
+
+				Local base = (Local) invokeExpr.getBase();
+				DoublePointsToSet pts = (DoublePointsToSet) pointsTo.reachingObjects(base);
+
+				Value argValue = invokeExpr.getArg(0);
+
 				if (argValue instanceof IntConstant) {
 					int argInt = ((IntConstant) argValue).value;
-					JimpleLocal baseLocal = (JimpleLocal) ((JSpecialInvokeExpr) invokeStmt
-							.getInvokeExpr()).getBase();
-					if (baseLocal instanceof JimpleLocal) {
-						// baseLocal is initialized with argInt
-						declaredPAs.put(baseLocal, argInt);
-					} else {
-						unhandled("SpecialInvokeExpr with non-local base.");
-					}
+					allocationSites.put(pts, argInt);
+
+					debug("SpecialInvokeExpr with argument: " + argInt);
 				} else {
 					unhandled("SpecialInvokeExpr with non-constant arg.");
 				}
@@ -229,9 +212,9 @@ public class Verifier {
 			if (u instanceof JInvokeStmt
 					&& ((JInvokeStmt) u).getInvokeExpr() instanceof JVirtualInvokeExpr) {
 
-				JInvokeStmt jInvStmt = (JInvokeStmt) u;
+				JInvokeStmt invokeStmt = (JInvokeStmt) u;
 
-				JVirtualInvokeExpr invokeExpr = (JVirtualInvokeExpr) jInvStmt
+				JVirtualInvokeExpr invokeExpr = (JVirtualInvokeExpr) invokeStmt
 						.getInvokeExpr();
 
 				Local base = (Local) invokeExpr.getBase();
@@ -243,9 +226,15 @@ public class Verifier {
 
 					// TODO: Check whether the 'sendJob' method's argument is
 					// within bounds
+
+					Value argValue = invokeExpr.getArg(0);
+					Interval argInterval = Analysis.getInterval(state, argValue);
+
+					debug("VirtualInvokeExpr with argument: " + argInterval);
+
 					// Visit all allocation sites that the base pointer may
 					// reference
-					MyP2SetVisitor visitor = new MyP2SetVisitor();
+					MyP2SetVisitor visitor = new MyP2SetVisitor(allocationSites, argInterval);
 					pts.forall(visitor);
 
 					if (!visitor.getReturnValue()) {
@@ -287,51 +276,33 @@ public class Verifier {
 
 class MyP2SetVisitor extends P2SetVisitor {
 
+	Map<PointsToSet, Integer> allocationSites;
+	Interval argumentInterval;
+
+	public MyP2SetVisitor(Map<PointsToSet, Integer> allocationSites, Interval methodCallArg) {
+		this.allocationSites = allocationSites;
+		this.argumentInterval = methodCallArg;
+	}
+
 	@Override
 	public void visit(Node arg0) {
 		// TODO: Check whether the argument given to sendJob is within bounds
+
 		AllocNode allocNode = (AllocNode) arg0;
-		PAG pag = allocNode.getPag();
 
 		this.returnValue = true;
+		int constructorArg;
 
-		Set<Entry<InvokeExpr, SootMethod>> entrySet = allocNode.getPag().callToMethod
-				.entrySet();
-		debug(entrySet);
-		Iterator<Entry<InvokeExpr, SootMethod>> it = entrySet.iterator();
+		for (Entry<PointsToSet, Integer> entry: allocationSites.entrySet()) {
+			if (((DoublePointsToSet) entry.getKey()).contains(allocNode)) {
+				constructorArg = entry.getValue();
+				Interval constructorInterval = new Interval(0, constructorArg - 1);
 
-		int argumentToSendJob = 0;
-		int constructorArgument = -1;
-
-		while (it.hasNext()) {
-			Entry<InvokeExpr, SootMethod> el = it.next();
-			InvokeExpr key = el.getKey();
-
-			if (key instanceof JSpecialInvokeExpr) {
-				Verifier.todo("Get constructor argument and store it in constructorArgument");
-			}
-
-			if (key instanceof JVirtualInvokeExpr) {
-
-				if (key.getMethod().getName().equals(Analysis.functionName)) {
-
-					Value argValue = key.getArg(0);
-
-					if (argValue instanceof IntConstant) {
-						argumentToSendJob = ((IntConstant) argValue).value;
-					} else if (argValue instanceof JimpleLocal) {
-						JimpleLocal local = (JimpleLocal) argValue;
-
-						Verifier.todo("Unhandled JimpleLocal in visitor");
-					}
+				if (!argumentInterval.isLeq(constructorInterval)) {
+					this.returnValue = false;
+					return;
 				}
 			}
-
-		}
-
-		if (argumentToSendJob > constructorArgument - 1) {
-			this.returnValue = false;
-			return;
 		}
 	}
 
