@@ -42,6 +42,8 @@ public class Verifier {
 	public static Boolean suppressErrors = false;
 
 	public static void main(String[] args) throws ApronException {
+		long startTime = System.nanoTime();
+
 		if (args.length < 1) {
 			System.err
 					.println("Usage: java -classpath soot-2.5.0.jar:./bin ch.ethz.sae.Verifier <class to test> <show errors>");
@@ -75,6 +77,10 @@ public class Verifier {
 				divisionByZeroFlag = 0;
 			}
 		}
+		long endTime = System.nanoTime();
+
+		System.out.println(analyzedClass + " "
+				+ ((endTime - startTime) / 1000000) + " ms");
 
 		if (divisionByZeroFlag == 1) {
 			System.out.println(analyzedClass + " NO_DIV_ZERO");

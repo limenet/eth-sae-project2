@@ -29,22 +29,17 @@ public class TestCases {
 	@Parameter(1)
 	public String expected;
 
-	public String[] output = new String[2];
-
-	public long execTime;
+	public String[] output = new String[3];
 
 	@Before
 	public void setUp() throws Exception {
 		String className = inputClass.split("-")[0];
 		String run = cwd() + "/run.sh " + className + " no";
-		long startTime = System.nanoTime();
 		String actualOutputOfTest = execCmd(run);
-		long endTime = System.nanoTime();
 		String[] outputSplitted = actualOutputOfTest.split("\\n");
-		this.execTime = (endTime - startTime) / 1000000;
 
 		int j = 0;
-		for (int i = outputSplitted.length - 2; i <= outputSplitted.length - 1; i++) {
+		for (int i = outputSplitted.length - 3; i <= outputSplitted.length - 1; i++) {
 			output[j] = outputSplitted[i].substring(className.length() + 1);
 			j++;
 		}
@@ -99,25 +94,30 @@ public class TestCases {
 	@Test
 	public void testDivByZero() throws Exception {
 
-		if (!output[0].contains("DIV_ZERO")) {
+		if (!output[1].contains("DIV_ZERO")) {
 			throw new Exception("Java exception or segmentation fault");
 		} else {
-			assertEquals(expected.split("\\|")[0], output[0]);
+			assertEquals(expected.split("\\|")[0], output[1]);
 		}
 	}
 
 	@Test
 	public void testOutOfBounds() throws Exception {
-		if (!output[1].contains("OUT_OF_BOUNDS")) {
+		if (!output[2].contains("OUT_OF_BOUNDS")) {
 			throw new Exception("Java exception or segmentation fault");
 		} else {
-			assertEquals(expected.split("\\|")[1], output[1]);
+			assertEquals(expected.split("\\|")[1], output[2]);
 		}
 	}
 
 	@Test
-	public void testExecutionTime() {
-		assertTrue(this.execTime < Integer.parseInt(expected.split("\\|")[2]));
+	public void testExecutionTime() throws Exception {
+		if (!output[0].contains("ms")) {
+			throw new Exception("Java exception or segmentation fault");
+		} else {
+			assertTrue(Integer.parseInt(output[0].split(" ")[0]) < Integer
+					.parseInt(expected.split("\\|")[2]));
+		}
 	}
 
 	// HELPERS
