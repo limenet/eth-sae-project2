@@ -209,9 +209,6 @@ public class Analysis extends ForwardBranchedFlowAnalysis<AWrapper> {
 					unhandled("JimpleLocal of non-integer type "
 							+ local.getType() + " in numerical analysis.");
 				}
-			} else if (right instanceof ParameterRef) {
-				//  TODO
-				unhandled("ParamerRef in numerical analysis.");
 			} else if (right instanceof AbstractBinopExpr) {
 				AbstractBinopExpr binopExpr = (AbstractBinopExpr) right;
 
