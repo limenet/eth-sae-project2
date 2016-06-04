@@ -345,13 +345,9 @@ public class Analysis extends ForwardBranchedFlowAnalysis<AWrapper> {
 		if (eqExpr instanceof JEqExpr) {
 			branchCons = new Tcons1(env, Tcons1.EQ, lmrExpr);
 			fallCons = new Tcons1(env, Tcons1.DISEQ, lmrExpr);
-			// TODO
-			todo("eqExpr: JEqExpr");
 		} else if (eqExpr instanceof JNeExpr) {
 			branchCons = new Tcons1(env, Tcons1.DISEQ, lmrExpr);
 			fallCons = new Tcons1(env, Tcons1.EQ, lmrExpr);
-			// TODO
-			todo("eqExpr: JNeExpr");
 		} else if (eqExpr instanceof JGeExpr) {
 			branchCons = new Tcons1(env, Tcons1.SUPEQ, lmrExpr);
 			fallCons = new Tcons1(env, Tcons1.SUP, rmlExpr);
