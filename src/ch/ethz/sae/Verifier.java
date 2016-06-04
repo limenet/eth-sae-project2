@@ -291,6 +291,7 @@ class MyP2SetVisitor extends P2SetVisitor {
 			Interval methodCallArg) {
 		this.allocationSites = allocationSites;
 		this.argumentInterval = methodCallArg;
+		this.returnValue = true;
 	}
 
 	@Override
@@ -299,8 +300,6 @@ class MyP2SetVisitor extends P2SetVisitor {
 		// @andrinadenzler 2016-06-03 implemented
 
 		AllocNode allocNode = (AllocNode) arg0;
-
-		this.returnValue = true;
 
 		for (Entry<PointsToSet, Integer> maxArg : allocationSites.entrySet()) {
 			if (((DoublePointsToSet) maxArg.getKey()).contains(allocNode)) {
