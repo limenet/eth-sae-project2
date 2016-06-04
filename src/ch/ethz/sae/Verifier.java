@@ -148,7 +148,8 @@ public class Verifier {
 						}
 
 					} else {
-						unhandled("unexpected divisor in divExpr: " + rightOp.getClass());
+						unhandled("unexpected divisor in divExpr: "
+								+ rightOp.getClass());
 						return false;
 					}
 				}
@@ -184,7 +185,8 @@ public class Verifier {
 
 				// TODO: Get the size of the PrinterArray given as argument to
 				// the constructor
-				// @andrinadenzler 2016-06-03 changed implementation from @limenet 2016-05-23 17:37
+				// @andrinadenzler 2016-06-03 changed implementation from
+				// @limenet 2016-05-23 17:37
 
 				JInvokeStmt invokeStmt = (JInvokeStmt) u;
 
@@ -302,7 +304,8 @@ class MyP2SetVisitor extends P2SetVisitor {
 
 		for (Entry<PointsToSet, Integer> maxArg : allocationSites.entrySet()) {
 			if (((DoublePointsToSet) maxArg.getKey()).contains(allocNode)) {
-				if (!argumentInterval.isLeq(new Interval(0, maxArg.getValue() - 1))) {
+				if (!argumentInterval
+						.isLeq(new Interval(0, maxArg.getValue() - 1))) {
 					this.returnValue = false;
 					return;
 				}
