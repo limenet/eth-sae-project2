@@ -206,12 +206,11 @@ public class Analysis extends ForwardBranchedFlowAnalysis<AWrapper> {
 					xp = new Texpr1Intern(env, rAr);
 					o.assign(man, varName, xp, null);
 				} else {
-					//  TODO
-					todo("handelDef: JimpleLocal of type: " + local.getType());
+					unhandled("JimpleLocal of non-integer type " + local.getType() + " in numerical analysis.");
 				}
 			} else if (right instanceof ParameterRef) {
-				//  TODO
-				todo("handleDef: ParamerRef");
+				// TODO
+				unhandled("ParamerRef in numerical analysis.");
 			} else if (right instanceof AbstractBinopExpr) {
 				AbstractBinopExpr binopExpr = (AbstractBinopExpr) right;
 
@@ -227,8 +226,7 @@ public class Analysis extends ForwardBranchedFlowAnalysis<AWrapper> {
 					leftNode = new Texpr1VarNode(
 							((JimpleLocal) leftOp).getName());
 				} else {
-					unhandled("handleIf: binopExpr unexpected leftOp operand type: "
-							+ leftOp.getType() + " class: " + leftOp.getClass());
+					unhandled("unexpected leftOp in binopExpr: " + leftOp.getClass());
 				}
 
 				Texpr1Node rightNode = null;
@@ -240,10 +238,7 @@ public class Analysis extends ForwardBranchedFlowAnalysis<AWrapper> {
 					rightNode = new Texpr1VarNode(
 							((JimpleLocal) rightOp).getName());
 				} else {
-					unhandled("handleDef: binopExpr unexpected rightOp operand type: "
-							+ rightOp.getType()
-							+ " class: "
-							+ rightOp.getClass());
+					unhandled("unexpected rightOp in binopExpr: " + rightOp.getClass());
 				}
 
 				if (binopExpr instanceof JMulExpr) {
@@ -260,6 +255,10 @@ public class Analysis extends ForwardBranchedFlowAnalysis<AWrapper> {
 							rightNode);
 				}
 
+				AWrapper state = new AWrapper(o);
+				debug("Bin_Op1: " + getInterval(state, leftOp));
+				debug("Bin_Op2: " + getInterval(state, rightOp));
+
 				xp = new Texpr1Intern(env, rAr);
 				if (binopExpr instanceof JDivExpr
 						&& rightOp instanceof IntConstant
@@ -269,17 +268,13 @@ public class Analysis extends ForwardBranchedFlowAnalysis<AWrapper> {
 					o.assign(man, varName, xp, null);
 				}
 
-				AWrapper state = new AWrapper(o);
-				debug("Bin_Op1: " + getInterval(state, leftOp));
-				debug("Bin_Op2: " + getInterval(state, rightOp));
-				debug("Bin_Res: " + getInterval(state, left)
-						+ binopExpr.getClass());
+				debug("Bin_Res: " + binopExpr.getClass() + ": " + getInterval(state, left));
 			}
 			// TODO: Handle other kinds of assignments (e.g. x = y * z)
 			// @andrinadenzler 2016-05-27 14:46 implemented except for some
 			// potential corner cases
 			else {
-				todo("handleDef: forget: " + right.getClass());
+				unhandled("unexpected assignment in numerical analysis (forget " + varName + "): " + right.getClass());
 				if (o.getEnvironment().hasVar(varName)) {
 					o.forget(man, varName, false);
 				}
@@ -302,14 +297,11 @@ public class Analysis extends ForwardBranchedFlowAnalysis<AWrapper> {
 			if (leftOp.getType().toString().equals(Analysis.resourceArrayName)) {
 				ow.set(new Abstract1(man, in));
 				ow_branchout.set(new Abstract1(man, in));
-				// TODO: consider this case in other parts as well?
-				todo("handleIf: PrinterArray in eqExpr");
 				return;
 			}
 			leftNode = new Texpr1VarNode(((JimpleLocal) leftOp).getName());
 		} else {
-			unhandled("handleIf: eqExpr unexpected leftOp operand type: "
-					+ leftOp.getType() + " class: " + leftOp.getClass());
+			unhandled("unexpected leftOp in eqExpr: " + leftOp.getClass());
 		}
 
 		Texpr1Node rightNode = null;
@@ -319,13 +311,14 @@ public class Analysis extends ForwardBranchedFlowAnalysis<AWrapper> {
 					((IntConstant) rightOp).value));
 		} else if (rightOp instanceof JimpleLocal) {
 			if (rightOp.getType().toString().equals(Analysis.resourceArrayName)) {
-				todo("handleIf: PrinterArray in eqExpr");
+				// TODO
+				ow.set(new Abstract1(man, in));
+				ow_branchout.set(new Abstract1(man, in));
 				return;
 			}
 			rightNode = new Texpr1VarNode(((JimpleLocal) rightOp).getName());
 		} else {
-			unhandled("handleDef: binopExpr unexpected rightOp operand type: "
-					+ rightOp.getType() + " class: " + rightOp.getClass());
+			unhandled("unexpected rightOp in eqExpr: " + rightOp.getClass());
 		}
 
 		Texpr1Node lmrExpr = new Texpr1BinNode(Texpr1BinNode.OP_SUB, leftNode,
@@ -361,7 +354,7 @@ public class Analysis extends ForwardBranchedFlowAnalysis<AWrapper> {
 			branchCons = new Tcons1(env, Tcons1.SUP, rmlExpr);
 			fallCons = new Tcons1(env, Tcons1.SUPEQ, lmrExpr);
 		} else {
-			unhandled("eqExpr: " + eqExpr.toString());
+			unhandled("unexpected eqExpr: " + eqExpr.getClass());
 		}
 
 		ow.set(in.meetCopy(man, fallCons));

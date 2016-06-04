@@ -121,8 +121,7 @@ public class Verifier {
 			}
 
 			// TODO: Check that all divisors are not zero
-			// @limenet 2016-05-23 15:11 this is implemented EXCEPT FOR
-			// loop widening (which is performed in Analysis.java)
+			// @limenet 2016-05-23 15:11 implemented
 
 			if (u instanceof DefinitionStmt) {
 				DefinitionStmt defStmt = (DefinitionStmt) u;
@@ -149,8 +148,7 @@ public class Verifier {
 						}
 
 					} else {
-						// TODO handle the case where divisor is not a constant
-						todo("divisor is not a constant " + rightOp.getClass());
+						unhandled("unexpected divisor in divExpr: " + rightOp.getClass());
 						return false;
 					}
 				}
@@ -205,7 +203,7 @@ public class Verifier {
 
 					debug("SpecialInvokeExpr with argument: " + argInt);
 				} else {
-					unhandled("SpecialInvokeExpr with non-constant arg.");
+					unhandled("SpecialInvokeExpr with non-constant argument.");
 				}
 
 			}
@@ -224,6 +222,7 @@ public class Verifier {
 				}
 				DoublePointsToSet pts = (DoublePointsToSet) pointsTo
 						.reachingObjects(base);
+				debug("Points-to set: " + pts);
 
 				if (invokeExpr.getMethod().getName()
 						.equals(Analysis.functionName)) {
