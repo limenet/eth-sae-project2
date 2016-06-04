@@ -293,15 +293,10 @@ class MyP2SetVisitor extends P2SetVisitor {
 		AllocNode allocNode = (AllocNode) arg0;
 
 		this.returnValue = true;
-		int constructorArg;
 
-		for (Entry<PointsToSet, Integer> entry : allocationSites.entrySet()) {
-			if (((DoublePointsToSet) entry.getKey()).contains(allocNode)) {
-				constructorArg = entry.getValue();
-				Interval constructorInterval = new Interval(0,
-						constructorArg - 1);
-
-				if (!argumentInterval.isLeq(constructorInterval)) {
+		for (Entry<PointsToSet, Integer> maxArg : allocationSites.entrySet()) {
+			if (((DoublePointsToSet) maxArg.getKey()).contains(allocNode)) {
+				if (!argumentInterval.isLeq(new Interval(0, maxArg.getValue() - 1))) {
 					this.returnValue = false;
 					return;
 				}
