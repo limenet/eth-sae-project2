@@ -206,10 +206,11 @@ public class Analysis extends ForwardBranchedFlowAnalysis<AWrapper> {
 					xp = new Texpr1Intern(env, rAr);
 					o.assign(man, varName, xp, null);
 				} else {
-					unhandled("JimpleLocal of non-integer type " + local.getType() + " in numerical analysis.");
+					unhandled("JimpleLocal of non-integer type "
+							+ local.getType() + " in numerical analysis.");
 				}
 			} else if (right instanceof ParameterRef) {
-				// TODO
+				//  TODO
 				unhandled("ParamerRef in numerical analysis.");
 			} else if (right instanceof AbstractBinopExpr) {
 				AbstractBinopExpr binopExpr = (AbstractBinopExpr) right;
@@ -226,7 +227,8 @@ public class Analysis extends ForwardBranchedFlowAnalysis<AWrapper> {
 					leftNode = new Texpr1VarNode(
 							((JimpleLocal) leftOp).getName());
 				} else {
-					unhandled("unexpected leftOp in binopExpr: " + leftOp.getClass());
+					unhandled("unexpected leftOp in binopExpr: "
+							+ leftOp.getClass());
 				}
 
 				Texpr1Node rightNode = null;
@@ -238,7 +240,8 @@ public class Analysis extends ForwardBranchedFlowAnalysis<AWrapper> {
 					rightNode = new Texpr1VarNode(
 							((JimpleLocal) rightOp).getName());
 				} else {
-					unhandled("unexpected rightOp in binopExpr: " + rightOp.getClass());
+					unhandled("unexpected rightOp in binopExpr: "
+							+ rightOp.getClass());
 				}
 
 				if (binopExpr instanceof JMulExpr) {
@@ -268,13 +271,15 @@ public class Analysis extends ForwardBranchedFlowAnalysis<AWrapper> {
 					o.assign(man, varName, xp, null);
 				}
 
-				debug("Bin_Res: " + binopExpr.getClass() + ": " + getInterval(state, left));
+				debug("Bin_Res: " + binopExpr.getClass() + ": "
+						+ getInterval(state, left));
 			}
 			// TODO: Handle other kinds of assignments (e.g. x = y * z)
 			// @andrinadenzler 2016-05-27 14:46 implemented except for some
 			// potential corner cases
 			else {
-				unhandled("unexpected assignment in numerical analysis (forget " + varName + "): " + right.getClass());
+				unhandled("unexpected assignment in numerical analysis (forget "
+						+ varName + "): " + right.getClass());
 				if (o.getEnvironment().hasVar(varName)) {
 					o.forget(man, varName, false);
 				}
@@ -311,7 +316,6 @@ public class Analysis extends ForwardBranchedFlowAnalysis<AWrapper> {
 					((IntConstant) rightOp).value));
 		} else if (rightOp instanceof JimpleLocal) {
 			if (rightOp.getType().toString().equals(Analysis.resourceArrayName)) {
-				// TODO
 				ow.set(new Abstract1(man, in));
 				ow_branchout.set(new Abstract1(man, in));
 				return;
