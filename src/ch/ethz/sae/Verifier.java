@@ -165,6 +165,7 @@ public class Verifier {
 			PAG pointsTo) throws ApronException {
 
 		// TODO: Create a list of all allocation sites for PrinterArray
+		// @andrinadenzler 2016-06-03 implemented
 
 		Map<PointsToSet, Integer> allocationSites = new HashMap<PointsToSet, Integer>();
 
@@ -185,8 +186,8 @@ public class Verifier {
 
 				// TODO: Get the size of the PrinterArray given as argument to
 				// the constructor
-				// @limenet 2016-05-23 17:37 this is working
-				// see the variable argInt
+				// @andrinadenzler 2016-06-03 changed implementation from @limenet 2016-05-23 17:37
+
 				JInvokeStmt invokeStmt = (JInvokeStmt) u;
 
 				JSpecialInvokeExpr invokeExpr = (JSpecialInvokeExpr) invokeStmt
@@ -229,6 +230,7 @@ public class Verifier {
 
 					// TODO: Check whether the 'sendJob' method's argument is
 					// within bounds
+					// @andrinadenzler 2016-06-03 implemented
 
 					Value argValue = invokeExpr.getArg(0);
 					Interval argInterval = Analysis
@@ -293,6 +295,7 @@ class MyP2SetVisitor extends P2SetVisitor {
 	@Override
 	public void visit(Node arg0) {
 		// TODO: Check whether the argument given to sendJob is within bounds
+		// @andrinadenzler 2016-06-03 implemented
 
 		AllocNode allocNode = (AllocNode) arg0;
 
