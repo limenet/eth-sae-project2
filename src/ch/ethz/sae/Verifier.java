@@ -26,6 +26,7 @@ import soot.jimple.spark.pag.AllocNode;
 import soot.jimple.spark.pag.Node;
 import soot.jimple.spark.pag.PAG;
 import soot.jimple.spark.sets.DoublePointsToSet;
+import soot.jimple.spark.sets.EmptyPointsToSet;
 import soot.jimple.spark.sets.P2SetVisitor;
 import soot.toolkits.graph.BriefUnitGraph;
 
@@ -217,6 +218,9 @@ public class Verifier {
 						.getInvokeExpr();
 
 				Local base = (Local) invokeExpr.getBase();
+				if (pointsTo.reachingObjects(base) instanceof EmptyPointsToSet) {
+					return false;
+				}
 				DoublePointsToSet pts = (DoublePointsToSet) pointsTo
 						.reachingObjects(base);
 
