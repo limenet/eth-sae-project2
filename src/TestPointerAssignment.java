@@ -1,7 +1,7 @@
 // DIV_OUTPUT = NO_DIV_ZERO
 // BOUNDS_OUTPUT = MAY_OUT_OF_BOUNDS
 
-class TestPointerAssignemnt {
+class TestPointerAssignment {
 	public static void foo() {
 		PrinterArray pa = new PrinterArray(10);
 		PrinterArray pb = new PrinterArray(20);
