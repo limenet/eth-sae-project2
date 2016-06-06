@@ -7,5 +7,5 @@ fi
 rm dist/ -r
 mkdir dist
 
-7z a dist/classes-only.zip src/ch/ethz/sae/*
-7z a dist/all-sources.zip src/*
+7z a -xr!Test* dist/classes-only.zip src/ch/ethz/sae/*
+7z a -xr!apron dist/all-sources.zip src/*
