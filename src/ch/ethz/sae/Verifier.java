@@ -32,7 +32,7 @@ import soot.toolkits.graph.BriefUnitGraph;
 
 public class Verifier {
 
-	public static Boolean suppressErrors = false;
+	public static Boolean suppressErrors = true;
 
 	public static void main(String[] args) throws ApronException {
 		long startTime = System.nanoTime();
@@ -44,8 +44,8 @@ public class Verifier {
 		}
 		String analyzedClass = args[0];
 		if (args.length == 2) {
-			if (args[1].equals("no")) {
-				suppressErrors = true;
+			if (args[1].equals("yes")) {
+				suppressErrors = false;
 			}
 		}
 		SootClass c = loadClass(analyzedClass);
